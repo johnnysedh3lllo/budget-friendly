@@ -1,27 +1,39 @@
 import type { Metadata, Viewport } from "next";
 import {
-  Fredoka,
-  Nunito,
-  Fraunces,
   Space_Grotesk,
+  Fredoka,
   Geist,
-  Geist_Mono,
+  Fraunces,
+  Quicksand,
+  DM_Serif_Display,
+  Sora,
+  Playfair_Display,
+  IBM_Plex_Mono,
+  Lexend,
+  JetBrains_Mono,
+  Bricolage_Grotesque,
+  Spectral,
+  Space_Mono,
 } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
-const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"] });
-const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
-const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"] });
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space",
-  subsets: ["latin"],
-});
-const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// One distinct family per theme (see the [data-theme] blocks in globals.css),
+// so switching themes changes the whole typographic character.
+const spaceGrotesk = Space_Grotesk({ variable: "--font-space", subsets: ["latin"] }); // brutalist
+const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"] }); // candy
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"] }); // fintech
+const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"] }); // mocha
+const quicksand = Quicksand({ variable: "--font-quicksand", subsets: ["latin"] }); // pastel
+const dmSerif = DM_Serif_Display({ variable: "--font-dm-serif", subsets: ["latin"], weight: "400" }); // sunset
+const sora = Sora({ variable: "--font-sora", subsets: ["latin"] }); // midnight
+const playfair = Playfair_Display({ variable: "--font-playfair", subsets: ["latin"] }); // noir
+const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500", "600", "700"] }); // terminal
+const lexend = Lexend({ variable: "--font-lexend", subsets: ["latin"] }); // aurora
+const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] }); // mono
+const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] }); // retro
+const spectral = Spectral({ variable: "--font-spectral", subsets: ["latin"], weight: ["400", "500", "600", "700"] }); // forest
+const spaceMono = Space_Mono({ variable: "--font-space-mono", subsets: ["latin"], weight: ["400", "700"] }); // mono-inverse
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -94,12 +106,20 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const fontVars = [
-    fredoka.variable,
-    nunito.variable,
-    fraunces.variable,
     spaceGrotesk.variable,
+    fredoka.variable,
     geist.variable,
-    geistMono.variable,
+    fraunces.variable,
+    quicksand.variable,
+    dmSerif.variable,
+    sora.variable,
+    playfair.variable,
+    plexMono.variable,
+    lexend.variable,
+    jetbrains.variable,
+    bricolage.variable,
+    spectral.variable,
+    spaceMono.variable,
   ].join(" ");
 
   return (

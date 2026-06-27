@@ -63,9 +63,9 @@
   --p8: oklch(0.48 0.24 295);
   --p-unalloc: oklch(0.85 0 0);
 
-  --font-display: var(--font-geist-mono), ui-monospace, monospace;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-space), system-ui, sans-serif;
+  --font-body: var(--font-space), system-ui, sans-serif;
+  --font-numeric: var(--font-space), system-ui, sans-serif;
   --display-tracking: -0.01em;
   --display-weight: 800;
   --body-weight: 450;
@@ -117,8 +117,8 @@
   --p-unalloc: oklch(0.9 0.012 320);
 
   --font-display: var(--font-fredoka), system-ui, sans-serif;
-  --font-body: var(--font-nunito), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-body: var(--font-fredoka), system-ui, sans-serif;
+  --font-numeric: var(--font-fredoka), system-ui, sans-serif;
   --display-tracking: -0.01em;
   --display-weight: 700;
   --body-weight: 600;
@@ -169,9 +169,9 @@
   --p8: oklch(0.8 0.08 178);
   --p-unalloc: oklch(0.92 0.008 255);
 
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-nunito), system-ui, sans-serif;
-  --font-numeric: var(--font-nunito), system-ui, sans-serif;
+  --font-display: var(--font-quicksand), system-ui, sans-serif;
+  --font-body: var(--font-quicksand), system-ui, sans-serif;
+  --font-numeric: var(--font-quicksand), system-ui, sans-serif;
   --display-tracking: 0em;
   --display-weight: 500;
   --body-weight: 500;
@@ -223,9 +223,9 @@
   --p8: oklch(0.68 0.12 232);
   --p-unalloc: oklch(0.9 0.015 50);
 
-  --font-display: var(--font-nunito), system-ui, sans-serif;
-  --font-body: var(--font-nunito), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-dm-serif), Georgia, serif;
+  --font-body: var(--font-dm-serif), Georgia, serif;
+  --font-numeric: var(--font-dm-serif), Georgia, serif;
   --display-tracking: -0.01em;
   --display-weight: 800;
   --body-weight: 500;
@@ -278,7 +278,7 @@
 
   --font-display: var(--font-geist), system-ui, sans-serif;
   --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-numeric: var(--font-geist), system-ui, sans-serif;
   --display-tracking: -0.025em;
   --display-weight: 600;
   --body-weight: 400;
@@ -330,9 +330,9 @@
   --p8: oklch(0.65 0.16 322);
   --p-unalloc: oklch(0.34 0.025 262);
 
-  --font-display: var(--font-geist), system-ui, sans-serif;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-sora), system-ui, sans-serif;
+  --font-body: var(--font-sora), system-ui, sans-serif;
+  --font-numeric: var(--font-sora), system-ui, sans-serif;
   --display-tracking: -0.02em;
   --display-weight: 600;
   --body-weight: 400;
@@ -384,9 +384,9 @@
   --p8: oklch(0.72 0.18 96);
   --p-unalloc: oklch(0.3 0 0);
 
-  --font-display: var(--font-space), system-ui, sans-serif;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-body: var(--font-playfair), Georgia, serif;
+  --font-numeric: var(--font-playfair), Georgia, serif;
   --display-tracking: -0.03em;
   --display-weight: 700;
   --body-weight: 400;
@@ -438,9 +438,9 @@
   --p8: oklch(0.7 0.14 220);
   --p-unalloc: oklch(0.3 0.035 150);
 
-  --font-display: var(--font-geist-mono), ui-monospace, monospace;
-  --font-body: var(--font-geist-mono), ui-monospace, monospace;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-plex-mono), ui-monospace, monospace;
+  --font-body: var(--font-plex-mono), ui-monospace, monospace;
+  --font-numeric: var(--font-plex-mono), ui-monospace, monospace;
   --display-tracking: 0em;
   --display-weight: 700;
   --body-weight: 400;
@@ -492,9 +492,9 @@
   --p8: oklch(0.76 0.15 50);
   --p-unalloc: oklch(0.33 0.035 286);
 
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-lexend), system-ui, sans-serif;
+  --font-body: var(--font-lexend), system-ui, sans-serif;
+  --font-numeric: var(--font-lexend), system-ui, sans-serif;
   --display-tracking: -0.01em;
   --display-weight: 560;
   --body-weight: 400;
@@ -546,9 +546,9 @@
   --p8: oklch(0.68 0 0);
   --p-unalloc: oklch(0.9 0 0);
 
-  --font-display: var(--font-space), system-ui, sans-serif;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-jetbrains), ui-monospace, monospace;
+  --font-body: var(--font-jetbrains), ui-monospace, monospace;
+  --font-numeric: var(--font-jetbrains), ui-monospace, monospace;
   --display-tracking: -0.03em;
   --display-weight: 600;
   --body-weight: 400;
@@ -600,9 +600,9 @@
   --p8: oklch(0.68 0.13 72);
   --p-unalloc: oklch(0.86 0.035 74);
 
-  --font-display: var(--font-fredoka), system-ui, sans-serif;
-  --font-body: var(--font-nunito), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-body: var(--font-bricolage), system-ui, sans-serif;
+  --font-numeric: var(--font-bricolage), system-ui, sans-serif;
   --display-tracking: -0.01em;
   --display-weight: 600;
   --body-weight: 500;
@@ -655,8 +655,8 @@
   --p-unalloc: oklch(0.33 0.022 50);
 
   --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-body: var(--font-fraunces), Georgia, serif;
+  --font-numeric: var(--font-fraunces), Georgia, serif;
   --display-tracking: -0.005em;
   --display-weight: 560;
   --body-weight: 400;
@@ -708,9 +708,9 @@
   --p8: oklch(0.58 0.14 34);
   --p-unalloc: oklch(0.88 0.016 148);
 
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-nunito), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-spectral), Georgia, serif;
+  --font-body: var(--font-spectral), Georgia, serif;
+  --font-numeric: var(--font-spectral), Georgia, serif;
   --display-tracking: -0.005em;
   --display-weight: 540;
   --body-weight: 500;
@@ -762,9 +762,9 @@
   --p8: oklch(0.5 0 0);
   --p-unalloc: oklch(0.3 0 0);
 
-  --font-display: var(--font-space), system-ui, sans-serif;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-space-mono), ui-monospace, monospace;
+  --font-body: var(--font-space-mono), ui-monospace, monospace;
+  --font-numeric: var(--font-space-mono), ui-monospace, monospace;
   --display-tracking: -0.03em;
   --display-weight: 600;
   --body-weight: 400;

@@ -8,7 +8,7 @@ export default function Home() {
       <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-2.5">
           <Logo />
-          <span className="hidden truncate text-base font-bold leading-none text-ink sm:inline">
+          <span className="hidden truncate text-base font-bold leading-tight text-ink sm:inline">
             Budget Friendly
           </span>
         </div>
