@@ -97,7 +97,7 @@ export const useBudget = create<State & Actions>()(
       amount: 3200,
       currency: "USD",
       partitions: DEFAULT_PARTITIONS,
-      theme: "candy",
+      theme: "brutalist",
       hasHydrated: false,
       lastAddedId: null,
       selectedId: null,

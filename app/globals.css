@@ -34,7 +34,6 @@
 /* ================================================================== *
  * THEME: candy (default) — arcade prize counter, gummy brights
  * ================================================================== */
-:root,
 [data-theme="candy"] {
   --bg: oklch(0.985 0.012 320);
   --surface: oklch(1 0 0);
@@ -248,6 +247,7 @@
 /* ================================================================== *
  * THEME: brutalist — raw concrete, thick ink rules, hard offset blocks
  * ================================================================== */
+:root,
 [data-theme="brutalist"] {
   color-scheme: light;
   --bg: oklch(0.95 0 0);
