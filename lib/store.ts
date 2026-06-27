@@ -111,6 +111,8 @@ export const useBudget = create<State & Actions>()(
         set((s) => {
           const allocated = s.partitions.reduce((t, p) => t + p.percent, 0);
           const room = 100 - allocated;
+          // Nothing to carve out once the split is fully allocated.
+          if (room <= 0) return s;
           const id = newId();
           return {
             // Append so the new bucket lands on the right, next to the

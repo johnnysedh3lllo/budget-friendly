@@ -292,6 +292,8 @@ function BucketForm({
   const p = partitions.find((x) => x.id === selectedId) ?? null;
   // The edit controls below apply to a single selected bucket only.
   const disabled = !p || isList;
+  // No room left → can't carve out a new bucket.
+  const full = selectUnallocated(partitions) <= 0;
 
   useEffect(() => {
     if (autoFocus && p && nameRef.current) {
@@ -395,7 +397,10 @@ function BucketForm({
 
         <button
           onClick={isList ? submitList : onAdd}
-          disabled={isList && !text.trim()}
+          disabled={full || (isList && !text.trim())}
+          title={
+            full ? "You've allocated 100% — lower a bucket to make room" : undefined
+          }
           className="btn btn-primary w-full shrink-0 text-sm sm:w-auto"
         >
           {isList ? "+ Add buckets" : "+ Add bucket"}
