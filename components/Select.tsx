@@ -69,7 +69,7 @@ export default function Select({
         <div
           role="listbox"
           aria-label={ariaLabel}
-          className={`bf-scroll surface-raised absolute z-30 mt-2 flex max-h-[50vh] flex-col gap-0.5 overflow-y-auto p-1.5 ${
+          className={`bf-scroll surface-raised absolute z-30 mt-2 flex max-h-[min(12.5rem,55vh)] flex-col gap-0.5 overflow-y-auto p-1.5 ${
             menuClassName ?? "left-0 right-0"
           }`}
           style={{ borderRadius: "var(--radius-md)" }}

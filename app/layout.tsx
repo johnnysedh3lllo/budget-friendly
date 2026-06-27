@@ -22,14 +22,58 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://getbudgetfriendly.vercel.app";
+
+const description =
+  "A flexible percentage budget calculator. Start at 100%, carve it into your own named buckets, and see the real amounts. The 50/30/20 rule is just a starting point.";
+
 export const metadata: Metadata = {
-  title: "Budget Friendly — split any amount, your way",
-  description:
-    "A flexible percentage budget calculator. Start at 100%, carve it into your own named buckets, and see the real amounts. The 50/30/20 rule is just a starting point.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Budget Friendly — split any amount, your way",
+    template: "%s · Budget Friendly",
+  },
+  description,
+  applicationName: "Budget Friendly",
+  keywords: [
+    "budget calculator",
+    "budgeting app",
+    "percentage budget",
+    "50/30/20 rule",
+    "money split",
+    "personal finance",
+    "savings planner",
+    "budget planner",
+    "expense allocation",
+    "naira budget",
+  ],
+  authors: [{ name: "Budget Friendly" }],
+  creator: "Budget Friendly",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Budget Friendly",
+    url: siteUrl,
+    locale: "en_US",
+    title: "Budget Friendly — split any amount, your way",
+    description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Budget Friendly — split any amount, your way",
+    description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  category: "finance",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#f2f2f2",
   width: "device-width",
   initialScale: 1,
 };

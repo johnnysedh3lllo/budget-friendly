@@ -95,7 +95,7 @@ export const useBudget = create<State & Actions>()(
   persist(
     (set, get) => ({
       amount: 3200,
-      currency: "USD",
+      currency: "NGN",
       partitions: DEFAULT_PARTITIONS,
       theme: "brutalist",
       hasHydrated: false,
@@ -249,7 +249,7 @@ export const useBudget = create<State & Actions>()(
         }),
 
       reset: () =>
-        set({ amount: 3200, partitions: DEFAULT_PARTITIONS, currency: "USD" }),
+        set({ amount: 3200, partitions: DEFAULT_PARTITIONS, currency: "NGN" }),
 
       setTheme: (theme) => {
         applyThemeToDom(theme);
