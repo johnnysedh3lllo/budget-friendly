@@ -113,14 +113,16 @@ export const useBudget = create<State & Actions>()(
           const room = 100 - allocated;
           const id = newId();
           return {
+            // Append so the new bucket lands on the right, next to the
+            // unallocated space it carves from.
             partitions: [
+              ...s.partitions,
               {
                 id,
                 name: "New bucket",
                 percent: Math.min(10, room),
                 colorIndex: nextColorIndex(s.partitions),
               },
-              ...s.partitions,
             ],
             lastAddedId: id,
             selectedId: id,
@@ -148,7 +150,7 @@ export const useBudget = create<State & Actions>()(
             });
           }
           return {
-            partitions: [...newParts, ...s.partitions],
+            partitions: [...s.partitions, ...newParts],
             lastAddedId: newParts[0]?.id ?? null,
             selectedId: newParts[0]?.id ?? null,
           };

@@ -183,8 +183,12 @@ export default function BucketBar() {
           })}
 
           {unallocated > 0 && (
-            <div
-              className="bf-hatch flex h-full items-center justify-center"
+            <button
+              type="button"
+              onClick={() => addPartition()}
+              aria-label="Add a bucket using the unallocated space"
+              title="Add a bucket"
+              className="bf-hatch group flex h-full cursor-pointer items-center justify-center hover:brightness-95"
               style={{
                 width: `${unallocated}%`,
                 transition: dragging ? "none" : "width 160ms var(--ease)",
@@ -194,12 +198,18 @@ export default function BucketBar() {
                 borderBottomLeftRadius: segs.length === 0 ? "var(--radius-md)" : 0,
               }}
             >
-              {partitions.length === 0 && (
-                <span className="text-xs font-semibold text-ink-muted">
-                  No buckets yet — add one to begin
+              {partitions.length === 0 ? (
+                <span className="px-2 text-center text-xs font-semibold text-ink-muted">
+                  No buckets yet — tap to add one
                 </span>
-              )}
-            </div>
+              ) : unallocated >= 12 ? (
+                <span className="num truncate px-2 text-xs font-bold text-ink-muted">
+                  + Add bucket
+                </span>
+              ) : unallocated >= 5 ? (
+                <span className="text-sm font-bold text-ink-muted">+</span>
+              ) : null}
+            </button>
           )}
         </div>
 
