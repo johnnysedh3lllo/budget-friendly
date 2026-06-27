@@ -70,6 +70,16 @@ roadmap note in `PRODUCT.md`.
 - **Motion** uses the `motion` package (`motion/react`). All motion has a
   `prefers-reduced-motion` fallback (see the media query in `globals.css`).
 
+## Rules
+
+### Workflow
+
+- **Queue new tasks.** If a new task arrives while you're already working on one,
+  finish the current task first, then pick up the new one — don't drop the
+  in-progress work to start the new thing. **Exception:** if the task is flagged
+  urgent (e.g. "urgent", "red alert", "now", "drop everything"), handle it
+  immediately, then return to the queued work. When you queue a task, say so.
+
 ## Conventions
 
 - Money/percent figures get the `.num` class (tabular numerals, theme numeric
