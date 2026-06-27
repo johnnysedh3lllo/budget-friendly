@@ -312,7 +312,7 @@ function BucketForm({
             </span>
           </>
         ) : (
-          <span className="min-w-[9rem] flex-1 text-sm text-ink-subtle">
+          <span className="flex min-h-6 min-w-[9rem] flex-1 items-center text-base text-ink-subtle">
             Click a block on the bar to edit it — or add a new bucket.
           </span>
         )}
