@@ -72,6 +72,14 @@ roadmap note in `PRODUCT.md`.
 
 ## Rules
 
+### Instructions
+
+- **The user's instructions are not optional.** Do what is asked. If you have a
+  concern, risk, suggestion, or a better idea, raise it — clearly and up front —
+  but never silently disregard, skip, water down, or treat an instruction as
+  optional. If something blocks carrying it out, say so and ask; do not just
+  substitute your own judgment for the instruction.
+
 ### Workflow
 
 - **Queue new tasks.** If a new task arrives while you're already working on one,
