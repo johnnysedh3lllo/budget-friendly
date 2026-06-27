@@ -98,6 +98,13 @@ roadmap note in `PRODUCT.md`.
   across commits (stage selectively or reconstruct) rather than committing them
   together.
 
+### Temporary files
+
+- **Keep scratch out of the repo root.** One-off scripts, screenshots, render
+  probes and any other throwaway files go in a top-level `temp/` directory (it's
+  gitignored and safe to delete in bulk) — never leave `_*`-style scratch files
+  loose in the project root.
+
 ## Conventions
 
 - Money/percent figures get the `.num` class (tabular numerals, theme numeric

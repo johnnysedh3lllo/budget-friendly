@@ -45,4 +45,7 @@ next-env.d.ts
 /.codex
 /.impeccable
 skills-lock.json
-_*.mjs
+
+# scratch / temporary files — local only, safe to delete in bulk
+/temp
+_*
