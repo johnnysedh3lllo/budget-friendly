@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 import type { Partition, Template, ThemeName } from "./types";
 import { THEMES } from "./types";
 import { clamp } from "./format";
+import { detectCurrency } from "./detect-currency";
 
 let idCounter = 0;
 function newId(): string {
@@ -59,6 +60,8 @@ const DEFAULT_PARTITIONS: Partition[] = [
 type State = {
   amount: number;
   currency: string;
+  /** True once the user explicitly picks a currency — stops location auto-detect. */
+  currencyPinned: boolean;
   partitions: Partition[];
   theme: ThemeName;
   hasHydrated: boolean;
@@ -71,6 +74,7 @@ type State = {
 type Actions = {
   setAmount: (amount: number) => void;
   setCurrency: (code: string) => void;
+  setCurrencyAuto: (code: string) => void;
   addPartition: () => void;
   addPartitionsFromText: (text: string) => void;
   removePartition: (id: string) => void;
@@ -95,7 +99,8 @@ export const useBudget = create<State & Actions>()(
   persist(
     (set, get) => ({
       amount: 3200,
-      currency: "NGN",
+      currency: "USD",
+      currencyPinned: false,
       partitions: DEFAULT_PARTITIONS,
       theme: "brutalist",
       hasHydrated: false,
@@ -105,7 +110,10 @@ export const useBudget = create<State & Actions>()(
       setAmount: (amount) =>
         set({ amount: Number.isFinite(amount) ? Math.max(0, amount) : 0 }),
 
-      setCurrency: (currency) => set({ currency }),
+      // User picks a currency → pin it so auto-detect won't override later.
+      setCurrency: (currency) => set({ currency, currencyPinned: true }),
+      // Location-detected currency → set without pinning.
+      setCurrencyAuto: (currency) => set({ currency }),
 
       addPartition: () =>
         set((s) => {
@@ -252,8 +260,7 @@ export const useBudget = create<State & Actions>()(
           };
         }),
 
-      reset: () =>
-        set({ amount: 3200, partitions: DEFAULT_PARTITIONS, currency: "NGN" }),
+      reset: () => set({ amount: 3200, partitions: DEFAULT_PARTITIONS }),
 
       setTheme: (theme) => {
         applyThemeToDom(theme);
@@ -289,12 +296,15 @@ export const useBudget = create<State & Actions>()(
       partialize: (s) => ({
         amount: s.amount,
         currency: s.currency,
+        currencyPinned: s.currencyPinned,
         partitions: s.partitions,
         theme: s.theme,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           applyThemeToDom(state.theme);
+          // Until the user picks one, default to their location's currency.
+          if (!state.currencyPinned) state.setCurrencyAuto(detectCurrency());
           state.setHasHydrated(true);
         }
       },
