@@ -1,0 +1,368 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import {
+  useBudget,
+  selectUnallocated,
+  selectAllocated,
+} from "@/lib/store";
+import { partitionColor, PALETTE_SIZE } from "@/lib/colors";
+import { formatMoney } from "@/lib/format";
+
+/** Pick readable label ink per palette colour from its OKLCH lightness. */
+function usePaletteInk(): string[] {
+  const theme = useBudget((s) => s.theme);
+  const [inks, setInks] = useState<string[]>(() => Array(8).fill("#ffffff"));
+  useEffect(() => {
+    const cs = getComputedStyle(document.documentElement);
+    const out: string[] = [];
+    for (let i = 1; i <= PALETTE_SIZE; i++) {
+      const v = cs.getPropertyValue(`--p${i}`).trim();
+      const m = v.match(/oklch\(\s*([\d.]+%?)/i);
+      let L = 0.6;
+      if (m) {
+        L = parseFloat(m[1]);
+        if (m[1].includes("%")) L /= 100;
+      }
+      out.push(L > 0.65 ? "oklch(0.2 0 0)" : "#ffffff");
+    }
+    setInks(out);
+  }, [theme]);
+  return inks;
+}
+
+export default function BucketBar() {
+  const partitions = useBudget((s) => s.partitions);
+  const setPercent = useBudget((s) => s.setPercent);
+  const adjustPair = useBudget((s) => s.adjustPair);
+  const addPartition = useBudget((s) => s.addPartition);
+  const lastAddedId = useBudget((s) => s.lastAddedId);
+  const clearLastAdded = useBudget((s) => s.clearLastAdded);
+  const selectedId = useBudget((s) => s.selectedId);
+  const setSelected = useBudget((s) => s.setSelected);
+
+  const inks = usePaletteInk();
+  const barRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef<number | null>(null);
+
+  const unallocated = selectUnallocated(partitions);
+  const allocated = selectAllocated(partitions);
+
+  // Drop the selection if its bucket no longer exists (e.g. after a template).
+  useEffect(() => {
+    if (selectedId && !partitions.some((p) => p.id === selectedId)) {
+      setSelected(null);
+    }
+  }, [partitions, selectedId, setSelected]);
+
+  let acc = 0;
+  const segs = partitions.map((p) => {
+    const start = acc;
+    acc += p.percent;
+    return { ...p, start, end: acc };
+  });
+
+  function pctFromEvent(clientX: number): number {
+    const rect = barRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return 0;
+    return ((clientX - rect.left) / rect.width) * 100;
+  }
+
+  function onHandleDown(e: React.PointerEvent, index: number) {
+    e.preventDefault();
+    e.stopPropagation();
+    draggingRef.current = index;
+    (e.target as Element).setPointerCapture(e.pointerId);
+  }
+  function onHandleMove(e: React.PointerEvent) {
+    const index = draggingRef.current;
+    if (index == null) return;
+    const start = partitions
+      .slice(0, index)
+      .reduce((t, p) => t + p.percent, 0);
+    const target = pctFromEvent(e.clientX) - start;
+    if (index < partitions.length - 1) {
+      // boundary between two buckets → trade between them
+      adjustPair(index, target);
+    } else {
+      // last bucket's edge → grow/shrink into the unallocated space
+      setPercent(partitions[index].id, target);
+    }
+  }
+  function onHandleUp(e: React.PointerEvent) {
+    draggingRef.current = null;
+    try {
+      (e.target as Element).releasePointerCapture(e.pointerId);
+    } catch {}
+  }
+  function onHandleKey(e: React.KeyboardEvent, index: number) {
+    const p = partitions[index];
+    const step = e.shiftKey ? 5 : 1;
+    let dir = 0;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") dir = 1;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") dir = -1;
+    if (!dir) return;
+    e.preventDefault();
+    if (index < partitions.length - 1) {
+      adjustPair(index, p.percent + dir * step);
+    } else {
+      setPercent(p.id, p.percent + dir * step);
+    }
+  }
+
+  const dragging = draggingRef.current != null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Editor form on top */}
+      <BucketForm
+        selectedId={selectedId}
+        onAdd={addPartition}
+        autoFocus={lastAddedId != null && lastAddedId === selectedId}
+        onAutoFocused={clearLastAdded}
+      />
+
+      {/* The split bar below */}
+      <div>
+      <div className="mb-2 flex items-baseline justify-between">
+        <span className="text-sm font-semibold text-ink-muted">
+          How your 100% is split
+        </span>
+        <span className="num text-sm font-semibold text-ink-muted">
+          {allocated}
+          <span className="text-ink-subtle">/100</span>
+        </span>
+      </div>
+
+      <div
+        ref={barRef}
+        className="relative overflow-hidden"
+        style={{ borderRadius: "var(--radius-md)" }}
+      >
+        <div
+          className="flex h-16 w-full overflow-hidden p-0"
+          style={{
+            background: "var(--surface)",
+            borderRadius: "var(--radius-md)",
+          }}
+        >
+          {segs.map((p, i) => {
+            const r = "var(--radius-md)";
+            const isFirst = i === 0;
+            const isLast = i === segs.length - 1 && unallocated <= 0;
+            return (
+            <button
+              key={p.id}
+              onClick={() => setSelected(p.id)}
+              aria-label={`Edit ${p.name || "bucket"}, ${p.percent}%`}
+              className="flex h-full min-w-0 items-center overflow-hidden text-left"
+              style={{
+                width: `${p.percent}%`,
+                background: partitionColor(p.colorIndex),
+                transition: dragging ? "none" : "width 160ms var(--ease)",
+                outline:
+                  selectedId === p.id ? "2px solid var(--ink)" : "none",
+                outlineOffset: "-2px",
+                borderTopLeftRadius: isFirst ? r : 0,
+                borderBottomLeftRadius: isFirst ? r : 0,
+                borderTopRightRadius: isLast ? r : 0,
+                borderBottomRightRadius: isLast ? r : 0,
+              }}
+            >
+              {p.percent >= 7 && (
+                <span
+                  className="num truncate px-2.5 text-xs font-bold"
+                  style={{ color: inks[p.colorIndex] }}
+                >
+                  {p.percent >= 12 && p.name ? `${p.name} · ` : ""}
+                  {p.percent}%
+                </span>
+              )}
+            </button>
+            );
+          })}
+
+          {unallocated > 0 && (
+            <div
+              className="bf-hatch flex h-full items-center justify-center"
+              style={{
+                width: `${unallocated}%`,
+                transition: dragging ? "none" : "width 160ms var(--ease)",
+                borderTopRightRadius: "var(--radius-md)",
+                borderBottomRightRadius: "var(--radius-md)",
+                borderTopLeftRadius: segs.length === 0 ? "var(--radius-md)" : 0,
+                borderBottomLeftRadius: segs.length === 0 ? "var(--radius-md)" : 0,
+              }}
+            >
+              {partitions.length === 0 && (
+                <span className="text-xs font-semibold text-ink-muted">
+                  No buckets yet — add one to begin
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Knobs: a thin full-height divider sitting on each boundary seam, so
+            it reads as part of the bar (not a floating pill) and stays compact
+            even when buckets are small. Each resizes the bucket on its left. */}
+        <div className="pointer-events-none absolute inset-0">
+          {segs.map((p, i) => (
+            <div
+              key={p.id}
+              role="slider"
+              tabIndex={0}
+              aria-label={`Resize ${p.name || "bucket"}`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={p.percent}
+              aria-valuetext={`${p.percent}%`}
+              onPointerDown={(e) => onHandleDown(e, i)}
+              onPointerMove={onHandleMove}
+              onPointerUp={onHandleUp}
+              onKeyDown={(e) => onHandleKey(e, i)}
+              className="bf-knob pointer-events-auto absolute top-0 h-full w-3.5 -translate-x-1/2 cursor-ew-resize touch-none focus-visible:outline-none"
+              style={{ left: `${p.end}%` }}
+            >
+              <span className="bf-knob-line" />
+            </div>
+          ))}
+        </div>
+
+        {/* Border drawn on top so the frame sits over the knobs */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            border: "var(--border-width) solid var(--border)",
+            borderRadius: "var(--radius-md)",
+          }}
+        />
+      </div>
+      </div>
+    </div>
+  );
+}
+
+function BucketForm({
+  selectedId,
+  onAdd,
+  autoFocus,
+  onAutoFocused,
+}: {
+  selectedId: string | null;
+  onAdd: () => void;
+  autoFocus: boolean;
+  onAutoFocused: () => void;
+}) {
+  const partitions = useBudget((s) => s.partitions);
+  const amount = useBudget((s) => s.amount);
+  const currency = useBudget((s) => s.currency);
+  const renamePartition = useBudget((s) => s.renamePartition);
+  const recolorPartition = useBudget((s) => s.recolorPartition);
+  const removePartition = useBudget((s) => s.removePartition);
+  const setPercent = useBudget((s) => s.setPercent);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const p = partitions.find((x) => x.id === selectedId) ?? null;
+  const disabled = !p;
+
+  useEffect(() => {
+    if (autoFocus && p && nameRef.current) {
+      nameRef.current.focus();
+      nameRef.current.select();
+      onAutoFocused();
+    }
+  }, [autoFocus, p, onAutoFocused]);
+
+  const sliceAmount = p ? amount * (p.percent / 100) : 0;
+
+  return (
+    <div className="surface flex flex-col gap-3 p-3">
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
+        {p ? (
+          <>
+            <span
+              aria-hidden
+              className="size-4 shrink-0 rounded-full"
+              style={{ background: partitionColor(p.colorIndex) }}
+            />
+            <input
+              ref={nameRef}
+              value={p.name}
+              onChange={(e) => renamePartition(p.id, e.target.value)}
+              placeholder="Name this bucket"
+              maxLength={28}
+              className="w-32 min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
+            />
+            <span className="num shrink-0 text-sm font-semibold text-ink">
+              {formatMoney(sliceAmount, currency)}
+            </span>
+          </>
+        ) : (
+          <span className="min-w-[9rem] flex-1 text-sm text-ink-subtle">
+            Click a block on the bar to edit it — or add a new bucket.
+          </span>
+        )}
+        <button onClick={onAdd} className="btn btn-primary shrink-0 text-sm">
+          + Add bucket
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Colour">
+          {Array.from({ length: PALETTE_SIZE }).map((_, i) => (
+            <button
+              key={i}
+              aria-label={`Colour ${i + 1}`}
+              aria-pressed={p ? i === p.colorIndex : false}
+              disabled={disabled}
+              onClick={() => p && recolorPartition(p.id, i)}
+              className="size-6 rounded-full disabled:cursor-not-allowed disabled:opacity-40"
+              style={{
+                background: partitionColor(i),
+                outline:
+                  p && i === p.colorIndex
+                    ? "2px solid var(--ink)"
+                    : "1px solid var(--border)",
+                outlineOffset: "2px",
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={p ? p.percent : ""}
+            disabled={disabled}
+            onChange={(e) => p && setPercent(p.id, Number(e.target.value))}
+            aria-label="Percent"
+            className="field num w-16 px-2 py-1 text-right text-sm font-semibold text-ink disabled:opacity-50"
+          />
+          <span className="num text-sm text-ink-muted">%</span>
+          <button
+            onClick={() => p && removePartition(p.id)}
+            disabled={disabled}
+            aria-label={p ? `Remove ${p.name}` : "Remove bucket"}
+            className="btn btn-ghost !px-2 !py-2"
+            title="Remove bucket"
+          >
+            <TrashIcon />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
