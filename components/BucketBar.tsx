@@ -15,9 +15,9 @@ function usePaletteInk(): string[] {
   const theme = useBudget((s) => s.theme);
   const [inks, setInks] = useState<string[]>(() => Array(8).fill("#ffffff"));
   useEffect(() => {
-    // Mono-inverse's grey ramp reads best with plain white labels throughout.
+    // Mono-inverse's grey ramp reads best with plain black labels throughout.
     if (theme === "mono-inverse") {
-      setInks(Array(PALETTE_SIZE).fill("#ffffff"));
+      setInks(Array(PALETTE_SIZE).fill("oklch(0.2 0 0)"));
       return;
     }
     const cs = getComputedStyle(document.documentElement);
