@@ -181,7 +181,7 @@ export default function BucketBar() {
             >
               {p.percent >= 7 && (
                 <span
-                  className="num truncate px-2.5 text-xs font-bold"
+                  className="num truncate px-2.5 text-xs font-bold sm:text-sm lg:text-base"
                   style={{ color: inks[p.colorIndex] }}
                 >
                   {p.percent >= 12 && p.name ? `${p.name} · ` : ""}
