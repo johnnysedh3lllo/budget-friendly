@@ -15,9 +15,11 @@ templates, not constraints.
 - **Name, recolor, delete** any bucket; add by text (`Rent 35, Food 15, Fun 5`).
 - **Live breakdown** — donut + per-bucket amounts for any input amount and
   currency.
-- **9 fully-tokenized themes** (Candy, Pastel, Sunset, Fintech, Brutalist, and
-  the dark Midnight / Noir / Terminal / Aurora) — every design decision is a
-  token: color, type, spacing, radius, shadow, motion. Cycle, pick, or shuffle.
+- **14 fully-tokenized themes** — light (Candy, Pastel, Sunset, Fintech, Forest,
+  Retro, Mono, **Neo Brutalism** — the default) and dark (Midnight, Noir,
+  Terminal, Aurora, Mocha, Mono Inverse). Every design decision is a token:
+  color, type, spacing, radius, border, shadow, motion, density — so switching
+  themes meaningfully changes the feel. Cycle, pick from the menu, or shuffle.
 - **Accessible** (WCAG-AA contrast per theme, keyboard-operable, reduced-motion
   respected) and **responsive** down to 320px.
 - Saves to your browser — no account, no tracking.

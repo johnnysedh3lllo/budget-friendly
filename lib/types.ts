@@ -23,7 +23,7 @@ export const THEMES: { id: ThemeName; label: string; blurb: string }[] = [
   { id: "retro", label: "Retro", blurb: "70s & groovy" },
   { id: "mono", label: "Mono", blurb: "Black & white" },
   { id: "mono-inverse", label: "Mono Inverse", blurb: "White on black" },
-  { id: "brutalist", label: "Brutalist", blurb: "Raw & concrete" },
+  { id: "brutalist", label: "Neo Brutalism", blurb: "Raw & concrete" },
   { id: "midnight", label: "Midnight", blurb: "Dark & cobalt" },
   { id: "noir", label: "Noir", blurb: "Dark & electric" },
   { id: "terminal", label: "Terminal", blurb: "Dark CRT green" },

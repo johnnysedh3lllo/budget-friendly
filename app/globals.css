@@ -32,7 +32,64 @@
 }
 
 /* ================================================================== *
- * THEME: candy (default) — arcade prize counter, gummy brights
+ * THEME: neo brutalism (default) — raw concrete, thick ink rules,
+ * hard offset blocks. Defined first so :root is the default and every
+ * explicit [data-theme] below overrides it.
+ * ================================================================== */
+:root,
+[data-theme="brutalist"] {
+  color-scheme: light;
+  --bg: oklch(0.95 0 0);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.91 0 0);
+  --ink: oklch(0.12 0 0);
+  --ink-muted: oklch(0.32 0 0);
+  --ink-subtle: oklch(0.46 0 0);
+  --primary: oklch(0.5 0.22 262);
+  --primary-ink: oklch(1 0 0);
+  --accent: oklch(0.86 0.19 96);
+  --border: oklch(0.12 0 0);
+  --ring: oklch(0.5 0.22 262);
+  --success: oklch(0.55 0.19 145);
+  --danger: oklch(0.55 0.24 28);
+
+  --p1: oklch(0.58 0.24 28);
+  --p2: oklch(0.5 0.22 262);
+  --p3: oklch(0.85 0.18 96);
+  --p4: oklch(0.62 0.2 145);
+  --p5: oklch(0.58 0.27 350);
+  --p6: oklch(0.7 0.13 210);
+  --p7: oklch(0.67 0.19 50);
+  --p8: oklch(0.48 0.24 295);
+  --p-unalloc: oklch(0.85 0 0);
+
+  --font-display: var(--font-geist-mono), ui-monospace, monospace;
+  --font-body: var(--font-geist), system-ui, sans-serif;
+  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --display-tracking: -0.01em;
+  --display-weight: 800;
+  --body-weight: 450;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-pill: 0px;
+  --border-width: 3px;
+
+  --shadow-sm: 4px 4px 0 var(--ink);
+  --shadow-md: 8px 8px 0 var(--ink);
+  --shadow-lg: 12px 12px 0 var(--ink);
+
+  --density: 0.95;
+  --dur-fast: 70ms;
+  --dur-base: 120ms;
+  --dur-slow: 180ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-bounce: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ================================================================== *
+ * THEME: candy — arcade prize counter, gummy brights
  * ================================================================== */
 [data-theme="candy"] {
   --bg: oklch(0.985 0.012 320);
@@ -242,61 +299,6 @@
   --dur-slow: 260ms;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-bounce: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* ================================================================== *
- * THEME: brutalist — raw concrete, thick ink rules, hard offset blocks
- * ================================================================== */
-:root,
-[data-theme="brutalist"] {
-  color-scheme: light;
-  --bg: oklch(0.95 0 0);
-  --surface: oklch(1 0 0);
-  --surface-2: oklch(0.91 0 0);
-  --ink: oklch(0.12 0 0);
-  --ink-muted: oklch(0.32 0 0);
-  --ink-subtle: oklch(0.46 0 0);
-  --primary: oklch(0.5 0.22 262);
-  --primary-ink: oklch(1 0 0);
-  --accent: oklch(0.86 0.19 96);
-  --border: oklch(0.12 0 0);
-  --ring: oklch(0.5 0.22 262);
-  --success: oklch(0.55 0.19 145);
-  --danger: oklch(0.55 0.24 28);
-
-  --p1: oklch(0.58 0.24 28);
-  --p2: oklch(0.5 0.22 262);
-  --p3: oklch(0.85 0.18 96);
-  --p4: oklch(0.62 0.2 145);
-  --p5: oklch(0.58 0.27 350);
-  --p6: oklch(0.7 0.13 210);
-  --p7: oklch(0.67 0.19 50);
-  --p8: oklch(0.48 0.24 295);
-  --p-unalloc: oklch(0.85 0 0);
-
-  --font-display: var(--font-geist-mono), ui-monospace, monospace;
-  --font-body: var(--font-geist), system-ui, sans-serif;
-  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
-  --display-tracking: -0.01em;
-  --display-weight: 800;
-  --body-weight: 450;
-
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-pill: 0px;
-  --border-width: 3px;
-
-  --shadow-sm: 4px 4px 0 var(--ink);
-  --shadow-md: 8px 8px 0 var(--ink);
-  --shadow-lg: 12px 12px 0 var(--ink);
-
-  --density: 0.95;
-  --dur-fast: 70ms;
-  --dur-base: 120ms;
-  --dur-slow: 180ms;
-  --ease: cubic-bezier(0.2, 0, 0, 1);
-  --ease-bounce: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* ================================================================== *
