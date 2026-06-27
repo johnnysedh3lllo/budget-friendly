@@ -6,7 +6,7 @@ import { useBudget, selectUnallocated } from "@/lib/store";
 import { partitionColor } from "@/lib/colors";
 import { formatMoney, formatMoneyCompact } from "@/lib/format";
 
-export default function Summary() {
+export default function Summary({ onPick }: { onPick?: () => void } = {}) {
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
   const partitions = useBudget((s) => s.partitions);
@@ -43,7 +43,7 @@ export default function Summary() {
   }, [updateShadow]);
 
   return (
-    <div className="surface-raised flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:min-h-0 lg:flex-1">
+    <div className="flex h-full min-h-0 flex-col gap-4 sm:gap-5">
       <div className="flex shrink-0 items-center justify-between gap-2">
         <h2 className="text-lg">Your breakdown</h2>
         <StatusPill unallocated={unallocated} />
@@ -60,7 +60,7 @@ export default function Summary() {
         </span>
       </div>
 
-      <div className="relative flex max-h-[40dvh] flex-col lg:max-h-none lg:min-h-0 lg:flex-1">
+      <div className="relative flex min-h-0 flex-1 flex-col">
         <div className="bf-shadow-top" data-show={shadow.top} aria-hidden />
         <ul
           ref={listRef}
@@ -70,7 +70,10 @@ export default function Summary() {
           {partitions.map((p) => (
             <li key={p.id} className="group relative flex items-center">
               <button
-                onClick={() => setSelected(p.id)}
+                onClick={() => {
+                  setSelected(p.id);
+                  onPick?.();
+                }}
                 data-active={selectedId === p.id}
                 aria-label={`Edit ${p.name || "Untitled"}`}
                 className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-md)] py-2 pl-2 pr-10 text-left transition-colors group-hover:bg-surface-2 data-[active=true]:bg-surface-2"
