@@ -80,6 +80,16 @@ roadmap note in `PRODUCT.md`.
   urgent (e.g. "urgent", "red alert", "now", "drop everything"), handle it
   immediately, then return to the queued work. When you queue a task, say so.
 
+### Commits
+
+- **One commit per self-contained change.** Each commit should be a single
+  feature, fix, bug, or docs change that can be reviewed on its own — never bundle
+  multiple features (or a feature + an unrelated fix + docs) into one commit. When
+  a feature is done, commit it as its own unit so the whole thing is reviewable in
+  isolation. If a file holds changes for more than one logical change, split them
+  across commits (stage selectively or reconstruct) rather than committing them
+  together.
+
 ## Conventions
 
 - Money/percent figures get the `.num` class (tabular numerals, theme numeric
