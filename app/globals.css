@@ -1053,7 +1053,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     box-sizing: border-box;
-    width: 8px;
+    width: 4px;
     height: 18px;
     border-radius: var(--radius-pill);
     background: var(--ink);
@@ -1065,8 +1065,8 @@
      a chunky, easy-to-grab handle. */
   .bf-knob:hover .bf-knob-line::after,
   .bf-knob:focus-visible .bf-knob-line::after {
-    width: 10px;
-    height: 26px;
+    width: 8px;
+    height: 23px;
   }
   .bf-knob:active .bf-knob-line::after,
   .bf-knob[data-active="true"] .bf-knob-line::after {
