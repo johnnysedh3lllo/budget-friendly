@@ -45,9 +45,34 @@ export function parseBucketText(text: string): ParsedBucket[] {
     });
 }
 
+let probeCtx: CanvasRenderingContext2D | null = null;
+/** Resolve any CSS colour (lab/oklch/var) to an `rgb(...)` string via canvas. */
+function colorToRgb(color: string): string | null {
+  if (typeof document === "undefined") return null;
+  if (!probeCtx) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 1;
+    probeCtx = c.getContext("2d", { willReadFrequently: true });
+  }
+  if (!probeCtx || !color) return null;
+  probeCtx.fillStyle = "#000";
+  probeCtx.fillStyle = color;
+  probeCtx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = probeCtx.getImageData(0, 0, 1, 1).data;
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 export function applyThemeToDom(theme: ThemeName) {
-  if (typeof document !== "undefined") {
-    document.documentElement.dataset.theme = theme;
+  if (typeof document === "undefined") return;
+  document.documentElement.dataset.theme = theme;
+  // Keep the PWA / browser title bar in sync with the theme's background.
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    const bg = getComputedStyle(document.documentElement)
+      .getPropertyValue("--bg")
+      .trim();
+    const rgb = colorToRgb(bg);
+    if (rgb) meta.setAttribute("content", rgb);
   }
 }
 
