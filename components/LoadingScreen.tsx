@@ -24,14 +24,24 @@ export default function LoadingScreen() {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
+    // Hold the drawn logo (~0.7s draw) a beat, then run a *sequenced* exit:
+    // the veil fades fully out first, and only then does the app fade in — so
+    // the logo is gone before content appears, never overlapping.
+    const HOLD = 1200; // min time the veil is shown
+    const VEIL_FADE = 340; // matches the .bf-loading opacity transition (0.32s)
     let revealed = false;
     let minPassed = false;
+    let t2 = 0;
+    let t3 = 0;
     const reveal = () => {
       if (revealed) return;
       revealed = true;
-      document.documentElement.dataset.loaded = "true";
-      setFade(true);
-      window.setTimeout(() => setShow(false), 360);
+      setFade(true); // 1) veil starts fading out
+      t2 = window.setTimeout(() => {
+        // 2) veil is gone — now let the app fade in (staggered via [data-loaded])
+        document.documentElement.dataset.loaded = "true";
+        t3 = window.setTimeout(() => setShow(false), 80);
+      }, VEIL_FADE);
     };
     const maybe = () => {
       if (minPassed && useBudget.getState().hasHydrated) reveal();
@@ -39,12 +49,14 @@ export default function LoadingScreen() {
     const minT = window.setTimeout(() => {
       minPassed = true;
       maybe();
-    }, 820);
+    }, HOLD);
     const unsub = useBudget.subscribe(maybe);
-    const cap = window.setTimeout(reveal, 2500);
+    const cap = window.setTimeout(reveal, 2800);
     return () => {
       window.clearTimeout(minT);
       window.clearTimeout(cap);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
       unsub();
     };
   }, []);
