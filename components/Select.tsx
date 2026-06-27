@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { scrollActiveIntoView } from "@/lib/scroll";
 
 export type SelectOption = {
   value: string;
@@ -52,6 +53,8 @@ export default function Select({
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLButtonElement>(null);
   const sel = options.find((o) => o.value === value);
 
   const filtered = useMemo(() => {
@@ -70,6 +73,10 @@ export default function Select({
       return;
     }
     if (searchable) searchRef.current?.focus();
+    // Open with the current selection already in view.
+    requestAnimationFrame(() =>
+      scrollActiveIntoView(listRef.current, activeRef.current),
+    );
     const onDoc = (e: PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
@@ -134,6 +141,7 @@ export default function Select({
             </div>
           )}
           <div
+            ref={listRef}
             role="listbox"
             aria-label={ariaLabel}
             className="bf-scroll flex max-h-[min(12.5rem,55vh)] flex-col gap-0.5 overflow-y-auto p-1.5"
@@ -148,6 +156,7 @@ export default function Select({
                 return (
                   <button
                     key={o.value}
+                    ref={active ? activeRef : undefined}
                     type="button"
                     role="option"
                     aria-selected={active}

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { THEMES } from "@/lib/types";
 import { useBudget } from "@/lib/store";
+import { scrollActiveIntoView } from "@/lib/scroll";
 
 export default function ThemeSwitcher() {
   const theme = useBudget((s) => s.theme);
@@ -12,6 +13,8 @@ export default function ThemeSwitcher() {
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLButtonElement>(null);
 
   const idx = THEMES.findIndex((t) => t.id === theme);
   const current = THEMES[idx] ?? THEMES[0];
@@ -19,6 +22,10 @@ export default function ThemeSwitcher() {
 
   useEffect(() => {
     if (!open) return;
+    // Open with the current theme already in view.
+    requestAnimationFrame(() =>
+      scrollActiveIntoView(listRef.current, activeRef.current),
+    );
     function onDoc(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
@@ -94,6 +101,7 @@ export default function ThemeSwitcher() {
 
         {open && (
           <div
+            ref={listRef}
             role="listbox"
             aria-label="Themes"
             className="bf-scroll surface-raised absolute right-0 top-full z-30 mt-2 flex max-h-[min(12.5rem,55vh)] w-56 flex-col gap-0.5 overflow-y-auto p-1.5"
@@ -104,6 +112,7 @@ export default function ThemeSwitcher() {
               return (
                 <button
                   key={t.id}
+                  ref={active ? activeRef : undefined}
                   role="option"
                   aria-selected={active}
                   data-active={active}
