@@ -39,7 +39,7 @@ function Logo() {
           stroke="currentColor"
           strokeWidth="2.6"
           strokeLinecap="round"
-          strokeDasharray="13.75 3"
+          strokeDasharray="12.05 4.7"
           transform="rotate(-90 12 12)"
         />
       </svg>

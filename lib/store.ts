@@ -79,7 +79,7 @@ export function applyThemeToDom(theme: ThemeName) {
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">` +
       `<rect width="32" height="32" rx="7" fill="${primary}"/>` +
-      `<circle cx="16" cy="16" r="9.5" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-dasharray="16.3 3.6" transform="rotate(-90 16 16)"/>` +
+      `<circle cx="16" cy="16" r="9.5" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-dasharray="14.3 5.6" transform="rotate(-90 16 16)"/>` +
       `</svg>`;
     let link = document.querySelector<HTMLLinkElement>("link#bf-favicon");
     if (!link) {
