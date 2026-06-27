@@ -27,7 +27,7 @@ export default function LoadingScreen() {
     // Hold the drawn logo (~0.7s draw) a beat, then run a *sequenced* exit:
     // the veil fades fully out first, and only then does the app fade in — so
     // the logo is gone before content appears, never overlapping.
-    const HOLD = 1450; // min veil time (0.28s pause + 0.7s draw + a hold)
+    const HOLD = 1380; // min veil time (0.28s pause + 0.7s draw + a hold)
     const VEIL_FADE = 340; // matches the .bf-loading opacity transition (0.32s)
     let revealed = false;
     let minPassed = false;
