@@ -292,19 +292,21 @@ function BucketForm({
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
         {p ? (
           <>
-            <span
-              aria-hidden
-              className="size-4 shrink-0 rounded-full"
-              style={{ background: partitionColor(p.colorIndex) }}
-            />
-            <input
-              ref={nameRef}
-              value={p.name}
-              onChange={(e) => renamePartition(p.id, e.target.value)}
-              placeholder="Name this bucket"
-              maxLength={28}
-              className="w-32 min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
-            />
+            <div className="flex min-w-0 flex-1 items-center gap-1">
+              <span
+                aria-hidden
+                className="size-4 shrink-0 rounded-full"
+                style={{ background: partitionColor(p.colorIndex) }}
+              />
+              <input
+                ref={nameRef}
+                value={p.name}
+                onChange={(e) => renamePartition(p.id, e.target.value)}
+                placeholder="Name this bucket"
+                maxLength={28}
+                className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
+              />
+            </div>
             <span className="num shrink-0 text-sm font-semibold text-ink">
               {formatMoney(sliceAmount, currency)}
             </span>
@@ -314,12 +316,15 @@ function BucketForm({
             Click a block on the bar to edit it — or add a new bucket.
           </span>
         )}
-        <button onClick={onAdd} className="btn btn-primary shrink-0 text-sm">
+        <button
+          onClick={onAdd}
+          className="btn btn-primary w-full shrink-0 text-sm sm:w-auto"
+        >
           + Add bucket
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+      <div className="flex flex-col items-start gap-3 border-t pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Colour">
           {Array.from({ length: PALETTE_SIZE }).map((_, i) => (
             <button
@@ -341,7 +346,7 @@ function BucketForm({
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <input
             type="number"
             min={0}
