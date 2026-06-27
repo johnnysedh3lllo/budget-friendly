@@ -6,7 +6,6 @@ import { useBudget, selectUnallocated } from "@/lib/store";
 import { formatMoney } from "@/lib/format";
 import AmountInput from "./AmountInput";
 import TemplatePicker from "./TemplatePicker";
-import BucketTextAdd from "./BucketTextAdd";
 import BucketBar from "./BucketBar";
 import Summary from "./Summary";
 
@@ -58,7 +57,6 @@ export default function Calculator() {
               </div>
             </div>
 
-            <BucketTextAdd />
             <BucketBar />
           </div>
 

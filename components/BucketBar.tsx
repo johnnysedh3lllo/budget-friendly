@@ -5,6 +5,7 @@ import {
   useBudget,
   selectUnallocated,
   selectAllocated,
+  parseBucketText,
 } from "@/lib/store";
 import { partitionColor, PALETTE_SIZE } from "@/lib/colors";
 import { formatMoney } from "@/lib/format";
@@ -277,10 +278,20 @@ function BucketForm({
   const recolorPartition = useBudget((s) => s.recolorPartition);
   const removePartition = useBudget((s) => s.removePartition);
   const setPercent = useBudget((s) => s.setPercent);
+  const addFromText = useBudget((s) => s.addPartitionsFromText);
+  const setSelected = useBudget((s) => s.setSelected);
   const nameRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLInputElement>(null);
+
+  // "single" edits/adds one bucket; "list" pastes several as text at once.
+  const [mode, setMode] = useState<"single" | "list">("single");
+  const [text, setText] = useState("");
+  const [note, setNote] = useState<string | null>(null);
+  const isList = mode === "list";
 
   const p = partitions.find((x) => x.id === selectedId) ?? null;
-  const disabled = !p;
+  // The edit controls below apply to a single selected bucket only.
+  const disabled = !p || isList;
 
   useEffect(() => {
     if (autoFocus && p && nameRef.current) {
@@ -292,10 +303,49 @@ function BucketForm({
 
   const sliceAmount = p ? amount * (p.percent / 100) : 0;
 
+  function enterListMode() {
+    setSelected(null); // so the edit row below disables, as when nothing's picked
+    setNote(null);
+    setMode("list");
+    requestAnimationFrame(() => listRef.current?.focus());
+  }
+
+  function submitList() {
+    const parsed = parseBucketText(text);
+    if (parsed.length === 0) return;
+    const room = selectUnallocated(partitions);
+    const requested = parsed.reduce((t, x) => t + x.percent, 0);
+    addFromText(text);
+    setText("");
+    const count = parsed.length;
+    const noun = count === 1 ? "bucket" : "buckets";
+    setNote(
+      requested > room
+        ? `Added ${count} ${noun} — trimmed to fit the ${room}% you had left.`
+        : `Added ${count} ${noun}.`,
+    );
+    listRef.current?.focus();
+  }
+
   return (
     <div className="surface flex flex-col gap-3 p-3">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
-        {p ? (
+        {isList ? (
+          <input
+            ref={listRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                submitList();
+              }
+            }}
+            placeholder="Name then %, comma-separated — e.g. Rent 35, School 20"
+            aria-label="Add several buckets from a list"
+            className="min-h-6 min-w-[9rem] flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-subtle"
+          />
+        ) : p ? (
           <>
             <div className="flex min-w-0 flex-1 items-center gap-1">
               <span
@@ -321,11 +371,34 @@ function BucketForm({
             Click a block on the bar to edit it — or add a new bucket.
           </span>
         )}
+
         <button
-          onClick={onAdd}
+          type="button"
+          onClick={() => (isList ? setMode("single") : enterListMode())}
+          aria-pressed={isList}
+          title={
+            isList ? "Back to adding one bucket" : "Add several buckets from a list"
+          }
+          className="btn btn-ghost shrink-0 gap-1.5 text-sm"
+          style={
+            isList
+              ? {
+                  background: "var(--surface-2)",
+                  outline: "1px solid var(--border)",
+                }
+              : undefined
+          }
+        >
+          <ListIcon />
+          List
+        </button>
+
+        <button
+          onClick={isList ? submitList : onAdd}
+          disabled={isList && !text.trim()}
           className="btn btn-primary w-full shrink-0 text-sm sm:w-auto"
         >
-          + Add bucket
+          {isList ? "+ Add buckets" : "+ Add bucket"}
         </button>
       </div>
 
@@ -374,7 +447,29 @@ function BucketForm({
           </button>
         </div>
       </div>
+
+      {isList && note && (
+        <p className="text-xs text-ink-subtle">{note}</p>
+      )}
     </div>
+  );
+}
+
+function ListIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </svg>
   );
 }
 
