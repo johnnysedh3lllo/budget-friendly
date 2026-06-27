@@ -57,11 +57,13 @@ export default function AmountInput() {
           onChange={setCurrency}
           ariaLabel="Currency"
           className="shrink-0"
-          menuClassName="right-0 w-48"
+          menuClassName="right-0 w-64"
+          searchable
           options={CURRENCIES.map((c) => ({
             value: c.code,
             label: c.code,
             hint: c.label,
+            keywords: c.countries,
           }))}
         />
       </div>
