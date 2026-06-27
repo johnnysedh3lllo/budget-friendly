@@ -33,12 +33,9 @@ export default function Image() {
               background: "#101014",
               alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
             }}
           >
-            <div style={{ display: "flex", width: "9px", height: "32px", borderRadius: "4px", background: "#ec4899" }} />
-            <div style={{ display: "flex", width: "9px", height: "32px", borderRadius: "4px", background: "#3b82f6" }} />
-            <div style={{ display: "flex", width: "9px", height: "32px", borderRadius: "4px", background: "#22c55e" }} />
+            <div style={{ display: "flex", width: "38px", height: "38px", borderRadius: "50%", border: "6px solid #ffffff" }} />
           </div>
           <div style={{ display: "flex", fontSize: "32px", fontWeight: 700, letterSpacing: "3px" }}>
             BUDGET FRIENDLY
