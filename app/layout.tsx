@@ -99,8 +99,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Set the saved theme before paint to avoid a flash of the default theme.
-const noFlashTheme = `(function(){try{var t=localStorage.getItem('bf-theme');var allowed=['candy','pastel','sunset','fintech','forest','retro','mono','mono-inverse','brutalist','midnight','noir','terminal','aurora','mocha'];document.documentElement.dataset.theme=allowed.indexOf(t)>-1?t:'brutalist';}catch(e){document.documentElement.dataset.theme='brutalist';}})();`;
+// Set the saved theme before paint, and inject a default favicon link. The
+// favicon is JS-owned (not server-rendered) so React never re-adds a competing
+// <link rel="icon"> — applyThemeToDom then recolours it per theme.
+const noFlashTheme = `(function(){try{var t=localStorage.getItem('bf-theme');var allowed=['candy','pastel','sunset','fintech','forest','retro','mono','mono-inverse','brutalist','midnight','noir','terminal','aurora','mocha'];document.documentElement.dataset.theme=allowed.indexOf(t)>-1?t:'brutalist';var s='<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#101014"/><circle cx="16" cy="16" r="9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-dasharray="14.3 5.6" transform="rotate(-90 16 16)"/></svg>';var l=document.createElement('link');l.rel='icon';l.type='image/svg+xml';l.href='data:image/svg+xml,'+encodeURIComponent(s);document.head.appendChild(l);}catch(e){document.documentElement.dataset.theme='brutalist';}})();`;
 
 export default function RootLayout({
   children,

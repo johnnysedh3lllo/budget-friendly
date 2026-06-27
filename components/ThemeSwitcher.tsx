@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { THEMES } from "@/lib/types";
-import { useBudget } from "@/lib/store";
+import { useBudget, applyThemeToDom } from "@/lib/store";
 import { scrollActiveIntoView } from "@/lib/scroll";
 
 export default function ThemeSwitcher() {
@@ -15,6 +15,12 @@ export default function ThemeSwitcher() {
   const ref = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
+
+  // Re-apply the theme after hydration so the dynamic favicon wins over Next's
+  // server-rendered <link rel="icon"> (which is re-added during head hydration).
+  useEffect(() => {
+    applyThemeToDom(useBudget.getState().theme);
+  }, []);
 
   const idx = THEMES.findIndex((t) => t.id === theme);
   const current = THEMES[idx] ?? THEMES[0];

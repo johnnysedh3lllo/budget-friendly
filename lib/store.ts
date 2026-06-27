@@ -81,15 +81,15 @@ export function applyThemeToDom(theme: ThemeName) {
       `<rect width="32" height="32" rx="7" fill="${primary}"/>` +
       `<circle cx="16" cy="16" r="9.5" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-dasharray="14.3 5.6" transform="rotate(-90 16 16)"/>` +
       `</svg>`;
-    let link = document.querySelector<HTMLLinkElement>("link#bf-favicon");
-    if (!link) {
-      link = document.createElement("link");
-      link.id = "bf-favicon";
-      link.rel = "icon";
-      link.type = "image/svg+xml";
-      document.head.appendChild(link);
-    }
+    // Drop the static /icon.svg link (and any prior dynamic one) and append a
+    // fresh link — replacing the element forces the browser to re-read it.
+    document.querySelectorAll('link[rel="icon"]').forEach((l) => l.remove());
+    const link = document.createElement("link");
+    link.id = "bf-favicon";
+    link.rel = "icon";
+    link.type = "image/svg+xml";
     link.href = "data:image/svg+xml," + encodeURIComponent(svg);
+    document.head.appendChild(link);
   }
 }
 
