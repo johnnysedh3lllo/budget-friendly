@@ -23,10 +23,10 @@ function srgbLuminance(r: number, g: number, b: number): number {
 }
 
 /**
- * Pick the label ink (black or white) with the higher WCAG contrast against each
- * palette colour, so labels stay legible on any palette — vivid, mid-tone or
- * grayscale. The colour is rasterised on a 1px canvas to read real sRGB,
- * sidestepping the fact that the browser may serialise tokens as lab()/oklch().
+ * One label ink per theme, applied to every segment for a consistent look. Pick
+ * black or white by whichever keeps the *worst* segment most legible (maximin)
+ * across the palette. Colours are rasterised on a 1px canvas to read real sRGB,
+ * sidestepping the browser serialising tokens as lab()/oklch().
  */
 function usePaletteInk(): string[] {
   const theme = useBudget((s) => s.theme);
@@ -36,7 +36,8 @@ function usePaletteInk(): string[] {
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const out: string[] = [];
+    let minDark = Infinity;
+    let minLight = Infinity;
     for (let i = 1; i <= PALETTE_SIZE; i++) {
       const v = cs.getPropertyValue(`--p${i}`).trim();
       let y = 0.18;
@@ -47,12 +48,11 @@ function usePaletteInk(): string[] {
         const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
         y = srgbLuminance(r, g, b);
       }
-      // Pure black vs white; pick whichever gives more contrast (always ≥4.5).
-      const cDark = (y + 0.05) / 0.05;
-      const cLight = 1.05 / (y + 0.05);
-      out.push(cDark >= cLight ? INK_DARK : INK_LIGHT);
+      minDark = Math.min(minDark, (y + 0.05) / 0.05);
+      minLight = Math.min(minLight, 1.05 / (y + 0.05));
     }
-    setInks(out);
+    const ink = minDark >= minLight ? INK_DARK : INK_LIGHT;
+    setInks(Array(PALETTE_SIZE).fill(ink));
   }, [theme]);
   return inks;
 }
@@ -202,7 +202,15 @@ export default function BucketBar() {
               {p.percent >= 7 && (
                 <span
                   className="num truncate px-2.5 text-xs font-bold"
-                  style={{ color: inks[p.colorIndex] }}
+                  style={{
+                    color: inks[p.colorIndex],
+                    // Subtle contrasting halo so the single per-theme ink stays
+                    // legible even on segments close to its own lightness.
+                    textShadow:
+                      inks[p.colorIndex] === INK_DARK
+                        ? "0 0 3px rgba(255,255,255,.7), 0 0 1px rgba(255,255,255,.9)"
+                        : "0 0 3px rgba(0,0,0,.65), 0 0 1px rgba(0,0,0,.85)",
+                  }}
                 >
                   {p.percent >= 12 && p.name ? `${p.name} · ` : ""}
                   {p.percent}%
