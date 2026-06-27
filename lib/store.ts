@@ -65,14 +65,31 @@ function colorToRgb(color: string): string | null {
 export function applyThemeToDom(theme: ThemeName) {
   if (typeof document === "undefined") return;
   document.documentElement.dataset.theme = theme;
+  const cs = getComputedStyle(document.documentElement);
+
   // Keep the PWA / browser title bar in sync with the theme's background.
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    const bg = getComputedStyle(document.documentElement)
-      .getPropertyValue("--bg")
-      .trim();
-    const rgb = colorToRgb(bg);
-    if (rgb) meta.setAttribute("content", rgb);
+  const bg = colorToRgb(cs.getPropertyValue("--bg").trim());
+  if (meta && bg) meta.setAttribute("content", bg);
+
+  // Recolour the favicon (aperture ring) to the theme's primary colours.
+  const primary = colorToRgb(cs.getPropertyValue("--primary").trim());
+  const ink = colorToRgb(cs.getPropertyValue("--primary-ink").trim());
+  if (primary && ink) {
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">` +
+      `<rect width="32" height="32" rx="7" fill="${primary}"/>` +
+      `<circle cx="16" cy="16" r="9.5" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-dasharray="16.3 3.6" transform="rotate(-90 16 16)"/>` +
+      `</svg>`;
+    let link = document.querySelector<HTMLLinkElement>("link#bf-favicon");
+    if (!link) {
+      link = document.createElement("link");
+      link.id = "bf-favicon";
+      link.rel = "icon";
+      link.type = "image/svg+xml";
+      document.head.appendChild(link);
+    }
+    link.href = "data:image/svg+xml," + encodeURIComponent(svg);
   }
 }
 
