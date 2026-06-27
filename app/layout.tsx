@@ -8,6 +8,7 @@ import {
   Geist_Mono,
 } from "next/font/google";
 import "./globals.css";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"] });
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
@@ -39,6 +40,11 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: "Budget Friendly",
+  appleWebApp: {
+    capable: true,
+    title: "Budget Friendly",
+    statusBarStyle: "default",
+  },
   keywords: [
     "budget calculator",
     "budgeting app",
@@ -106,7 +112,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashTheme }} />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <ServiceWorkerRegister />
+      </body>
     </html>
   );
 }
