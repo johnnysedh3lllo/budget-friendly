@@ -96,7 +96,7 @@ export default function ThemeSwitcher() {
           <div
             role="listbox"
             aria-label="Themes"
-            className="bf-scroll surface-raised absolute right-0 top-full z-30 mt-2 flex max-h-[min(15rem,60vh)] w-56 flex-col gap-0.5 overflow-y-auto p-1.5"
+            className="bf-scroll surface-raised absolute right-0 top-full z-30 mt-2 flex max-h-[min(12.5rem,55vh)] w-56 flex-col gap-0.5 overflow-y-auto p-1.5"
             style={{ borderRadius: "var(--radius-md)" }}
           >
             {THEMES.map((t) => {
