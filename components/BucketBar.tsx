@@ -142,15 +142,15 @@ export default function BucketBar() {
       <div
         ref={barRef}
         className="relative overflow-hidden"
-        style={{ borderRadius: "var(--radius-md)" }}
+        style={{
+          borderRadius: "var(--radius-md)",
+          // Border lives on the clipping element so segments are clipped inside
+          // it and can't leak past the rounded corners.
+          border: "var(--border-width) solid var(--border)",
+          background: "var(--surface)",
+        }}
       >
-        <div
-          className="flex h-16 w-full overflow-hidden p-0"
-          style={{
-            background: "var(--surface)",
-            borderRadius: "var(--radius-md)",
-          }}
-        >
+        <div className="flex h-16 w-full p-0">
           {segs.map((p, i) => {
             const r = "var(--radius-md)";
             const isFirst = i === 0;
@@ -245,15 +245,6 @@ export default function BucketBar() {
           ))}
         </div>
 
-        {/* Border drawn on top so the frame sits over the knobs */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            border: "var(--border-width) solid var(--border)",
-            borderRadius: "var(--radius-md)",
-          }}
-        />
       </div>
       </div>
     </div>
