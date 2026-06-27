@@ -5,10 +5,13 @@ import { useBudget } from "@/lib/store";
 
 // Aperture mark as three arcs (matches the logo) so each can draw in.
 const rad = (d: number) => (d * Math.PI) / 180;
+// Round coordinates so the server (Node) and client (Chrome) emit byte-identical
+// path strings — raw Math.sin/cos differ in the last fp digit and trip hydration.
+const pt = (n: number) => Number(n.toFixed(3));
 const arc = (a1: number, a2: number, r = 44, cx = 60, cy = 60) =>
-  `M ${cx + r * Math.cos(rad(a1))} ${cy + r * Math.sin(rad(a1))} A ${r} ${r} 0 0 1 ${
-    cx + r * Math.cos(rad(a2))
-  } ${cy + r * Math.sin(rad(a2))}`;
+  `M ${pt(cx + r * Math.cos(rad(a1)))} ${pt(cy + r * Math.sin(rad(a1)))} A ${r} ${r} 0 0 1 ${pt(
+    cx + r * Math.cos(rad(a2)),
+  )} ${pt(cy + r * Math.sin(rad(a2)))}`;
 const ARCS = [0, 1, 2].map((i) => arc(-90 + i * 120 + 12, -90 + i * 120 + 108));
 
 /**
