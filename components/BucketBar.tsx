@@ -44,6 +44,8 @@ export default function BucketBar() {
   const inks = usePaletteInk();
   const barRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef<number | null>(null);
+  // Which knob is actively held — keeps its grip enlarged for the whole drag.
+  const [activeKnob, setActiveKnob] = useState<number | null>(null);
 
   const unallocated = selectUnallocated(partitions);
   const allocated = selectAllocated(partitions);
@@ -72,6 +74,7 @@ export default function BucketBar() {
     e.preventDefault();
     e.stopPropagation();
     draggingRef.current = index;
+    setActiveKnob(index);
     (e.target as Element).setPointerCapture(e.pointerId);
   }
   function onHandleMove(e: React.PointerEvent) {
@@ -91,6 +94,7 @@ export default function BucketBar() {
   }
   function onHandleUp(e: React.PointerEvent) {
     draggingRef.current = null;
+    setActiveKnob(null);
     try {
       (e.target as Element).releasePointerCapture(e.pointerId);
     } catch {}
@@ -231,6 +235,7 @@ export default function BucketBar() {
               onPointerMove={onHandleMove}
               onPointerUp={onHandleUp}
               onKeyDown={(e) => onHandleKey(e, i)}
+              data-active={activeKnob === i ? "true" : undefined}
               className="bf-knob pointer-events-auto absolute top-0 h-full w-3.5 -translate-x-1/2 cursor-ew-resize touch-none focus-visible:outline-none"
               style={{ left: `${p.end}%` }}
             >

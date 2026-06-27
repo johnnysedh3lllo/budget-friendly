@@ -1030,28 +1030,49 @@
     );
   }
 
-  /* Bucket-bar knob: a thin full-height divider sitting on the seam. */
+  /* Bucket-bar knob: a hair-thin seam carrying a small circular grip dot. The
+     dot is just a "you can drag here" hint at rest, and swells on hover / focus
+     / press so it's easy to grab and pull. */
   .bf-knob {
     display: flex;
     align-items: center;
     justify-content: center;
   }
   .bf-knob-line {
+    position: relative;
+    display: flex;
     height: 100%;
-    width: 5px;
+    width: 2px;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink);
+  }
+  .bf-knob-line::after {
+    content: "";
     box-sizing: border-box;
-    background: var(--surface);
-    border-left: 1px solid var(--ink);
-    border-right: 1px solid var(--ink);
-    transition: width var(--dur-fast) var(--ease);
+    width: 5px;
+    height: 16px;
+    border-radius: var(--radius-pill);
+    background: var(--ink);
+    transition:
+      width var(--dur-fast) var(--ease-bounce),
+      height var(--dur-fast) var(--ease-bounce);
   }
-  .bf-knob:hover .bf-knob-line,
-  .bf-knob:focus-visible .bf-knob-line {
+  /* Grows on hover/focus, then grows further while actively held so it becomes
+     a chunky, easy-to-grab handle. */
+  .bf-knob:hover .bf-knob-line::after,
+  .bf-knob:focus-visible .bf-knob-line::after {
     width: 8px;
+    height: 30px;
   }
-  .bf-knob:focus-visible .bf-knob-line {
+  .bf-knob:active .bf-knob-line::after,
+  .bf-knob[data-active="true"] .bf-knob-line::after {
+    width: 11px;
+    height: 40px;
+  }
+  .bf-knob:focus-visible .bf-knob-line::after {
     outline: 2px solid var(--ring);
-    outline-offset: 1px;
+    outline-offset: 2px;
   }
 
   /* Range sliders adopt their partition colour via accent-color (set inline). */
