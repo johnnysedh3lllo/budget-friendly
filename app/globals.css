@@ -1040,18 +1040,21 @@
   }
   .bf-knob-line {
     position: relative;
-    display: flex;
     height: 100%;
     width: 2px;
-    align-items: center;
-    justify-content: center;
     background: var(--ink);
   }
+  /* Absolutely centred so its width renders as authored — as a flex child of a
+     2px parent it would be shrunk to 2px and vanish. */
   .bf-knob-line::after {
     content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     box-sizing: border-box;
-    width: 5px;
-    height: 16px;
+    width: 8px;
+    height: 18px;
     border-radius: var(--radius-pill);
     background: var(--ink);
     transition:
@@ -1062,13 +1065,13 @@
      a chunky, easy-to-grab handle. */
   .bf-knob:hover .bf-knob-line::after,
   .bf-knob:focus-visible .bf-knob-line::after {
-    width: 8px;
-    height: 30px;
+    width: 10px;
+    height: 26px;
   }
   .bf-knob:active .bf-knob-line::after,
   .bf-knob[data-active="true"] .bf-knob-line::after {
-    width: 11px;
-    height: 40px;
+    width: 12px;
+    height: 32px;
   }
   .bf-knob:focus-visible .bf-knob-line::after {
     outline: 2px solid var(--ring);
