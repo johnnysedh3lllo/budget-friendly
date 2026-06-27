@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { TEMPLATES } from "@/lib/templates";
 import { useBudget } from "@/lib/store";
 import Select from "./Select";
 
 export default function TemplatePicker() {
   const applyTemplate = useBudget((s) => s.applyTemplate);
+  const [selectedId, setSelectedId] = useState("");
 
   return (
     <div>
@@ -14,14 +16,17 @@ export default function TemplatePicker() {
         <span className="text-ink-subtle"> — then make it yours</span>
       </label>
       <Select
-        value=""
+        value={selectedId}
         placeholder="Choose a starting split…"
         ariaLabel="Start from a rule"
         className="w-full"
         menuClassName="left-0 right-0"
         onChange={(id) => {
           const t = TEMPLATES.find((x) => x.id === id);
-          if (t) applyTemplate(t);
+          if (t) {
+            applyTemplate(t);
+            setSelectedId(id);
+          }
         }}
         options={TEMPLATES.map((t) => ({
           value: t.id,
