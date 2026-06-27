@@ -1162,7 +1162,8 @@
     stroke-linecap: round;
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    animation: bf-arc-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    /* brief pause on the empty veil, then the arcs draw in */
+    animation: bf-arc-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.28s forwards;
   }
   @keyframes bf-arc-draw {
     to {
