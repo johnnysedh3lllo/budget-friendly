@@ -10,22 +10,47 @@ import {
 import { partitionColor, PALETTE_SIZE } from "@/lib/colors";
 import { formatMoney } from "@/lib/format";
 
-/** Pick readable label ink per palette colour from its OKLCH lightness. */
+const INK_DARK = "oklch(0 0 0)";
+const INK_LIGHT = "oklch(1 0 0)";
+
+/** WCAG relative luminance from 0–255 sRGB channels. */
+function srgbLuminance(r: number, g: number, b: number): number {
+  const lin = [r, g, b].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+}
+
+/**
+ * Pick the label ink (black or white) with the higher WCAG contrast against each
+ * palette colour, so labels stay legible on any palette — vivid, mid-tone or
+ * grayscale. The colour is rasterised on a 1px canvas to read real sRGB,
+ * sidestepping the fact that the browser may serialise tokens as lab()/oklch().
+ */
 function usePaletteInk(): string[] {
   const theme = useBudget((s) => s.theme);
-  const [inks, setInks] = useState<string[]>(() => Array(8).fill("#ffffff"));
+  const [inks, setInks] = useState<string[]>(() => Array(8).fill(INK_LIGHT));
   useEffect(() => {
     const cs = getComputedStyle(document.documentElement);
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const out: string[] = [];
     for (let i = 1; i <= PALETTE_SIZE; i++) {
       const v = cs.getPropertyValue(`--p${i}`).trim();
-      const m = v.match(/oklch\(\s*([\d.]+%?)/i);
-      let L = 0.6;
-      if (m) {
-        L = parseFloat(m[1]);
-        if (m[1].includes("%")) L /= 100;
+      let y = 0.18;
+      if (ctx && v) {
+        ctx.fillStyle = "#000";
+        ctx.fillStyle = v;
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        y = srgbLuminance(r, g, b);
       }
-      out.push(L > 0.65 ? "oklch(0.2 0 0)" : "#ffffff");
+      // Pure black vs white; pick whichever gives more contrast (always ≥4.5).
+      const cDark = (y + 0.05) / 0.05;
+      const cLight = 1.05 / (y + 0.05);
+      out.push(cDark >= cLight ? INK_DARK : INK_LIGHT);
     }
     setInks(out);
   }, [theme]);
