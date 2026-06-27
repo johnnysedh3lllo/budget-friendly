@@ -516,6 +516,222 @@
 }
 
 /* ================================================================== *
+ * THEME: mono — achromatic Swiss minimal, buckets read as a grey ramp
+ * ================================================================== */
+[data-theme="mono"] {
+  color-scheme: light;
+  --bg: oklch(0.975 0 0);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.95 0 0);
+  --ink: oklch(0.18 0 0);
+  --ink-muted: oklch(0.42 0 0);
+  --ink-subtle: oklch(0.56 0 0);
+  --primary: oklch(0.2 0 0);
+  --primary-ink: oklch(1 0 0);
+  --accent: oklch(0.45 0 0);
+  --border: oklch(0.88 0 0);
+  --ring: oklch(0.2 0 0);
+  --success: oklch(0.55 0.12 150);
+  --danger: oklch(0.5 0.16 25);
+
+  --p1: oklch(0.22 0 0);
+  --p2: oklch(0.36 0 0);
+  --p3: oklch(0.5 0 0);
+  --p4: oklch(0.62 0 0);
+  --p5: oklch(0.74 0 0);
+  --p6: oklch(0.3 0 0);
+  --p7: oklch(0.44 0 0);
+  --p8: oklch(0.68 0 0);
+  --p-unalloc: oklch(0.9 0 0);
+
+  --font-display: var(--font-geist), system-ui, sans-serif;
+  --font-body: var(--font-geist), system-ui, sans-serif;
+  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --display-tracking: -0.025em;
+  --display-weight: 600;
+  --body-weight: 400;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 9px;
+  --radius-pill: 999px;
+  --border-width: 1px;
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.06);
+  --shadow-md: 0 4px 16px -6px oklch(0 0 0 / 0.1);
+  --shadow-lg: 0 16px 40px -14px oklch(0 0 0 / 0.14);
+
+  --density: 1;
+  --dur-fast: 110ms;
+  --dur-base: 190ms;
+  --dur-slow: 300ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ================================================================== *
+ * THEME: retro — 70s rec room, mustard / rust / avocado, groovy
+ * ================================================================== */
+[data-theme="retro"] {
+  color-scheme: light;
+  --bg: oklch(0.95 0.035 78);
+  --surface: oklch(0.985 0.022 80);
+  --surface-2: oklch(0.92 0.04 76);
+  --ink: oklch(0.28 0.045 50);
+  --ink-muted: oklch(0.46 0.05 52);
+  --ink-subtle: oklch(0.6 0.04 56);
+  --primary: oklch(0.54 0.15 42);
+  --primary-ink: oklch(0.97 0.02 80);
+  --accent: oklch(0.74 0.13 82);
+  --border: oklch(0.85 0.045 72);
+  --ring: oklch(0.54 0.15 42);
+  --success: oklch(0.58 0.12 130);
+  --danger: oklch(0.52 0.16 32);
+
+  --p1: oklch(0.55 0.16 40);
+  --p2: oklch(0.74 0.14 84);
+  --p3: oklch(0.6 0.12 124);
+  --p4: oklch(0.55 0.09 205);
+  --p5: oklch(0.62 0.16 56);
+  --p6: oklch(0.46 0.08 58);
+  --p7: oklch(0.58 0.1 110);
+  --p8: oklch(0.68 0.13 72);
+  --p-unalloc: oklch(0.86 0.035 74);
+
+  --font-display: var(--font-fredoka), system-ui, sans-serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --display-tracking: -0.01em;
+  --display-weight: 600;
+  --body-weight: 500;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --border-width: 1px;
+
+  --shadow-sm: 0 1px 2px oklch(0.5 0.1 50 / 0.12);
+  --shadow-md: 0 10px 26px -12px oklch(0.5 0.12 50 / 0.3);
+  --shadow-lg: 0 26px 56px -20px oklch(0.5 0.12 50 / 0.34);
+
+  --density: 1;
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --ease: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+/* ================================================================== *
+ * THEME: mocha (dark) — warm espresso, caramel & cream
+ * ================================================================== */
+[data-theme="mocha"] {
+  color-scheme: dark;
+  --bg: oklch(0.2 0.018 50);
+  --surface: oklch(0.25 0.022 50);
+  --surface-2: oklch(0.3 0.026 50);
+  --ink: oklch(0.93 0.02 72);
+  --ink-muted: oklch(0.76 0.03 66);
+  --ink-subtle: oklch(0.63 0.03 60);
+  --primary: oklch(0.72 0.13 66);
+  --primary-ink: oklch(0.22 0.03 50);
+  --accent: oklch(0.68 0.1 30);
+  --border: oklch(0.37 0.026 52);
+  --ring: oklch(0.74 0.13 66);
+  --success: oklch(0.74 0.12 150);
+  --danger: oklch(0.66 0.16 28);
+
+  --p1: oklch(0.74 0.13 66);
+  --p2: oklch(0.66 0.14 30);
+  --p3: oklch(0.68 0.12 12);
+  --p4: oklch(0.68 0.09 150);
+  --p5: oklch(0.8 0.12 86);
+  --p6: oklch(0.62 0.11 350);
+  --p7: oklch(0.66 0.09 196);
+  --p8: oklch(0.74 0.13 58);
+  --p-unalloc: oklch(0.33 0.022 50);
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-geist), system-ui, sans-serif;
+  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --display-tracking: -0.005em;
+  --display-weight: 560;
+  --body-weight: 400;
+
+  --radius-sm: 9px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+  --border-width: 1px;
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.45);
+  --shadow-md: 0 8px 24px -10px oklch(0 0 0 / 0.6);
+  --shadow-lg: 0 24px 54px -18px oklch(0 0 0 / 0.7);
+
+  --density: 1;
+  --dur-fast: 130ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-bounce: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* ================================================================== *
+ * THEME: forest — light, organic deep green with clay earth tones
+ * ================================================================== */
+[data-theme="forest"] {
+  color-scheme: light;
+  --bg: oklch(0.97 0.016 148);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.95 0.022 148);
+  --ink: oklch(0.26 0.04 152);
+  --ink-muted: oklch(0.44 0.045 152);
+  --ink-subtle: oklch(0.58 0.035 150);
+  --primary: oklch(0.5 0.12 152);
+  --primary-ink: oklch(1 0 0);
+  --accent: oklch(0.62 0.13 46);
+  --border: oklch(0.88 0.022 148);
+  --ring: oklch(0.5 0.12 152);
+  --success: oklch(0.56 0.13 150);
+  --danger: oklch(0.55 0.17 30);
+
+  --p1: oklch(0.52 0.13 152);
+  --p2: oklch(0.62 0.14 46);
+  --p3: oklch(0.62 0.11 122);
+  --p4: oklch(0.62 0.1 218);
+  --p5: oklch(0.74 0.12 86);
+  --p6: oklch(0.52 0.12 350);
+  --p7: oklch(0.58 0.1 192);
+  --p8: oklch(0.58 0.14 34);
+  --p-unalloc: oklch(0.88 0.016 148);
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+  --font-numeric: var(--font-geist-mono), ui-monospace, monospace;
+  --display-tracking: -0.005em;
+  --display-weight: 540;
+  --body-weight: 500;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --border-width: 1px;
+
+  --shadow-sm: 0 1px 2px oklch(0.4 0.08 150 / 0.1);
+  --shadow-md: 0 12px 30px -14px oklch(0.4 0.1 150 / 0.26);
+  --shadow-lg: 0 28px 60px -20px oklch(0.4 0.1 150 / 0.3);
+
+  --density: 1;
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-bounce: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* ================================================================== *
  * Base
  * ================================================================== */
 @layer base {

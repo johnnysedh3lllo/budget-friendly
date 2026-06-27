@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 };
 
 // Set the saved theme before paint to avoid a flash of the default theme.
-const noFlashTheme = `(function(){try{var t=localStorage.getItem('bf-theme');var allowed=['candy','pastel','sunset','fintech','brutalist','midnight','noir','terminal','aurora'];document.documentElement.dataset.theme=allowed.indexOf(t)>-1?t:'candy';}catch(e){document.documentElement.dataset.theme='candy';}})();`;
+const noFlashTheme = `(function(){try{var t=localStorage.getItem('bf-theme');var allowed=['candy','pastel','sunset','fintech','forest','retro','mono','brutalist','midnight','noir','terminal','aurora','mocha'];document.documentElement.dataset.theme=allowed.indexOf(t)>-1?t:'candy';}catch(e){document.documentElement.dataset.theme='candy';}})();`;
 
 export default function RootLayout({
   children,
