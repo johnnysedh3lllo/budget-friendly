@@ -1,11 +1,16 @@
+import type { CSSProperties } from "react";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import Calculator from "@/components/Calculator";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Home() {
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-bg text-ink">
       {/* App toolbar */}
-      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-3 sm:px-5">
+      <header
+        className="bf-reveal flex h-14 shrink-0 items-center justify-between gap-3 border-b px-3 sm:px-5"
+        style={{ "--reveal-d": "0s" } as CSSProperties}
+      >
         <div className="flex min-w-0 items-center gap-2.5">
           <Logo />
           <span className="hidden truncate text-base font-bold leading-tight text-ink sm:inline">
@@ -19,6 +24,8 @@ export default function Home() {
       <main className="flex min-h-0 flex-1">
         <Calculator />
       </main>
+
+      <LoadingScreen />
     </div>
   );
 }

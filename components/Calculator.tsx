@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useBudget, selectUnallocated } from "@/lib/store";
 import { formatMoney } from "@/lib/format";
@@ -30,7 +30,10 @@ export default function Calculator() {
     <MotionConfig reducedMotion="user">
       <div className="flex min-h-0 w-full flex-1 flex-col lg:flex-row">
         {/* Editor pane */}
-        <section className="bf-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-4 sm:gap-5 sm:px-6 sm:pt-6 lg:flex-[1.4] lg:pb-6">
+        <section
+          className="bf-reveal bf-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-4 sm:gap-5 sm:px-6 sm:pt-6 lg:flex-[1.4] lg:pb-6"
+          style={{ "--reveal-d": "0.05s" } as CSSProperties}
+        >
           <div className="flex flex-col gap-4 sm:gap-5">
             <AmountInput />
             <TemplatePicker />
@@ -74,7 +77,10 @@ export default function Calculator() {
         </section>
 
         {/* Summary pane — desktop only */}
-        <aside className="bf-scroll hidden min-h-0 border-l px-6 py-6 lg:flex lg:flex-1 lg:flex-col lg:overflow-y-auto">
+        <aside
+          className="bf-reveal bf-scroll hidden min-h-0 border-l px-6 py-6 lg:flex lg:flex-1 lg:flex-col lg:overflow-y-auto"
+          style={{ "--reveal-d": "0.1s" } as CSSProperties}
+        >
           <Summary />
         </aside>
       </div>
