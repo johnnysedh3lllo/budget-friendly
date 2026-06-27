@@ -66,7 +66,9 @@ export default function ThemeSwitcher() {
                 outline: "1px solid var(--border)",
               }}
             />
-            {current.label}
+            {/* Fixed width so the control doesn't resize between theme names
+                (keeps the cycle target stationary while rapidly switching). */}
+            <span className="w-[5.5rem] truncate text-left">{current.label}</span>
           </button>
 
           <span
