@@ -1,37 +1,23 @@
-export type Currency = { code: string; symbol: string; label: string };
+import { CURRENCIES, currencyOf, type Currency } from "./currencies";
 
-export const CURRENCIES: Currency[] = [
-  { code: "USD", symbol: "$", label: "US Dollar" },
-  { code: "EUR", symbol: "€", label: "Euro" },
-  { code: "GBP", symbol: "£", label: "British Pound" },
-  { code: "NGN", symbol: "₦", label: "Nigerian Naira" },
-  { code: "JPY", symbol: "¥", label: "Japanese Yen" },
-  { code: "INR", symbol: "₹", label: "Indian Rupee" },
-  { code: "CAD", symbol: "$", label: "Canadian Dollar" },
-  { code: "AUD", symbol: "$", label: "Australian Dollar" },
-];
+export { CURRENCIES, currencyOf };
+export type { Currency };
 
-export function currencyOf(code: string): Currency {
-  return CURRENCIES.find((c) => c.code === code) ?? CURRENCIES[0];
-}
-
-/** Whole-unit currencies (e.g. JPY) shouldn't show decimals. */
+/** Per-currency minor units (e.g. JPY 0, KWD 3); defaults to 2. */
 function fractionDigits(code: string): number {
-  return code === "JPY" ? 0 : 2;
+  return currencyOf(code).decimals ?? 2;
 }
 
 export function formatMoney(amount: number, code: string): string {
-  const digits = fractionDigits(code);
   try {
+    // Intl knows each currency's own minor units — let it decide.
     return new Intl.NumberFormat(undefined, {
       style: "currency",
       currency: code,
-      minimumFractionDigits: digits,
-      maximumFractionDigits: digits,
     }).format(amount);
   } catch {
     const c = currencyOf(code);
-    return `${c.symbol}${amount.toFixed(digits)}`;
+    return `${c.symbol}${amount.toFixed(fractionDigits(code))}`;
   }
 }
 
