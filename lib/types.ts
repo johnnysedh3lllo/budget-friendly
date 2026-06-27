@@ -11,7 +11,8 @@ export type ThemeName =
   | "noir"
   | "terminal"
   | "aurora"
-  | "mocha";
+  | "mocha"
+  | "mono-inverse";
 
 export const THEMES: { id: ThemeName; label: string; blurb: string }[] = [
   { id: "candy", label: "Candy", blurb: "Bright & bouncy" },
@@ -21,6 +22,7 @@ export const THEMES: { id: ThemeName; label: string; blurb: string }[] = [
   { id: "forest", label: "Forest", blurb: "Green & organic" },
   { id: "retro", label: "Retro", blurb: "70s & groovy" },
   { id: "mono", label: "Mono", blurb: "Black & white" },
+  { id: "mono-inverse", label: "Mono Inverse", blurb: "White on black" },
   { id: "brutalist", label: "Brutalist", blurb: "Raw & concrete" },
   { id: "midnight", label: "Midnight", blurb: "Dark & cobalt" },
   { id: "noir", label: "Noir", blurb: "Dark & electric" },
