@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design tooling (Impeccable / agent skills) — local only, not app code
+/.agents
+/.codex
+/.impeccable
+skills-lock.json
+_*.mjs
