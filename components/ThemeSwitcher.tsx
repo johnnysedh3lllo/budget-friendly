@@ -113,7 +113,7 @@ export default function ThemeSwitcher() {
             role="listbox"
             aria-label="Themes"
             className="bf-scroll surface-raised absolute right-0 top-full z-30 mt-2 flex max-h-[min(12.5rem,55vh)] w-56 flex-col gap-0.5 overflow-y-auto p-1.5"
-            style={{ borderRadius: "var(--radius-md)" }}
+            style={{ borderRadius: "var(--radius-md)", maxWidth: "calc(100vw - 1rem)" }}
           >
             {THEMES.map((t) => {
               const active = t.id === theme;

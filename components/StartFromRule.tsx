@@ -10,7 +10,11 @@ import { MiniBucketBar } from "./BucketsLibrary";
 // "Start from rule" — a button (beside Clear / Even split) that opens a modal of
 // the built-in starting rules with a search box. The list shows ~5 at a time and
 // scrolls, so the modal stays compact. Picking one loads it and closes.
-export default function StartFromRule() {
+export default function StartFromRule({
+  className,
+}: {
+  className?: string;
+}) {
   const applyTemplate = useBudget((s) => s.applyTemplate);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -44,7 +48,7 @@ export default function StartFromRule() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="btn btn-ghost gap-1.5 text-sm"
+        className={`btn btn-ghost gap-1.5 text-sm ${className ?? ""}`}
       >
         <RuleIcon />
         Start from rule

@@ -31,6 +31,12 @@
   --font-numeric: var(--font-numeric);
 }
 
+/* Extra-small breakpoint at 360px: below it (≈320px phones) layouts collapse to
+   a compact stacked form; from 360px up they use the normal inline layout. */
+@theme {
+  --breakpoint-xs: 22.5rem;
+}
+
 /* ================================================================== *
  * THEME: neo brutalism (default) — raw concrete, thick ink rules,
  * hard offset blocks. Defined first so :root is the default and every
@@ -797,6 +803,17 @@
 
   html {
     color-scheme: light;
+  }
+
+  /* Only the very smallest phones (≤359px, i.e. ~320px) get a compact scale:
+     dropping the root size shrinks type AND every rem-based gap/padding together,
+     so the layout stops feeling bloated where width is tightest. 360px and up
+     render at the normal 16px base. (Media-query rem resolves against 16px, so
+     Tailwind breakpoints are unaffected.) */
+  @media (max-width: 359.98px) {
+    html {
+      font-size: 15px;
+    }
   }
 
   body {

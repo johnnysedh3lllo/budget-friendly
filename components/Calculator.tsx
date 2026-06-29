@@ -41,11 +41,15 @@ export default function Calculator() {
           <div className="flex shrink-0 flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg">Where your money goes</h2>
-              <div className="flex items-center gap-2">
-                <StartFromRule />
+              {/* Phones: "Start from rule" full-width on top, Clear + Even split
+                  as equal halves below. The 3-button inline row only fits cleanly
+                  at wider widths (it varies by theme font/border), so it waits for
+                  sm; below that the stacked grid never strands a button. */}
+              <div className="grid w-full grid-cols-2 gap-2 sm:ml-auto sm:flex sm:w-auto sm:items-center sm:justify-end">
+                <StartFromRule className="col-span-2 w-full sm:col-auto sm:w-auto" />
                 <span
                   aria-hidden
-                  className="h-5 w-px"
+                  className="hidden h-5 w-px sm:block"
                   style={{ background: "var(--border)" }}
                 />
                 <button
@@ -127,6 +131,9 @@ export default function Calculator() {
               style={{
                 borderTopLeftRadius: "var(--radius-lg)",
                 borderTopRightRadius: "var(--radius-lg)",
+                // Flush to the bottom edge — no curve on the bottom corners.
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
               }}
               initial={{ y: "100%" }}
               animate={{ y: 0 }}

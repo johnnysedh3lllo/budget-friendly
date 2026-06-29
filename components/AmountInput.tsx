@@ -89,79 +89,78 @@ export default function AmountInput() {
     keywords: c.countries,
   }));
 
-  const sourceLabel = currencyOf(srcCurrency).label;
-
   return (
     <div>
       <label htmlFor="amount" className="mb-2 block text-sm text-ink-muted">
         <span className="font-semibold">Amount to split</span>
-        <span className="text-ink-subtle">
-          {" "}
-          — What you&apos;re working with; a paycheck, savings, anything.
-        </span>
       </label>
-      <div className="field flex items-center gap-1 px-3 py-2 sm:px-4 sm:py-3">
-        <span
-          aria-hidden
-          className="num text-2xl sm:text-3xl text-ink-muted shrink-0"
-        >
-          {symbol}
-        </span>
-        <input
-          id="amount"
-          inputMode="decimal"
-          autoComplete="off"
-          value={display}
-          placeholder="0"
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onChange={(e) => {
-            const raw = e.target.value.replace(/[^0-9.]/g, "");
-            const parsed = parseFloat(raw);
-            editAmount(Number.isNaN(parsed) ? 0 : parsed);
-          }}
-          className="num w-full min-w-0 bg-transparent text-2xl sm:text-3xl font-semibold text-ink outline-none placeholder:text-ink-subtle"
-        />
-        {/* Left: the currency the entered value is in (source). */}
-        <Select
-          value={srcCurrency}
-          onChange={onPickSource}
-          ariaLabel="Amount currency"
-          className="shrink-0"
-          menuClassName="right-0 w-64"
-          searchable
-          options={sourceOptions}
-        />
-        {/* Right: convert-to / view-in currency. */}
-        <Select
-          value={viewCurrency ?? ""}
-          onChange={onPickView}
-          ariaLabel="Convert to currency"
-          placeholder="to…"
-          className="shrink-0"
-          menuClassName="right-0 w-64"
-          searchable
-          options={viewOptions}
-        />
-        {viewCurrency && (
-          <button
-            type="button"
-            onClick={clearView}
-            aria-label="Clear conversion and edit the source value"
-            title="Clear conversion"
-            className="field flex shrink-0 cursor-pointer items-center justify-center px-2 py-2 text-ink-muted transition-colors hover:text-ink"
+      <div className="field flex flex-wrap items-center gap-x-1 gap-y-2 px-3 py-2 xs:flex-nowrap sm:px-4 sm:py-3">
+        {/* Symbol + amount: full first row only on ≤320px so the number never
+            truncates; inline with the selects from 360px up. */}
+        <div className="flex min-w-0 basis-full items-center gap-1 xs:flex-1 xs:basis-auto">
+          <span
+            aria-hidden
+            className="num text-2xl sm:text-3xl text-ink-muted shrink-0"
           >
-            <ClearIcon />
-          </button>
-        )}
+            {symbol}
+          </span>
+          <input
+            id="amount"
+            inputMode="decimal"
+            autoComplete="off"
+            value={display}
+            placeholder="0"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/[^0-9.]/g, "");
+              const parsed = parseFloat(raw);
+              editAmount(Number.isNaN(parsed) ? 0 : parsed);
+            }}
+            className="num w-full min-w-0 bg-transparent text-2xl sm:text-3xl font-semibold text-ink outline-none placeholder:text-ink-subtle"
+          />
+        </div>
+        {/* Currency selects: wrap to their own row only on ≤320px, inline from 360px. */}
+        <div className="flex w-full shrink-0 items-center justify-end gap-1 xs:w-auto">
+          {/* Left: the currency the entered value is in (source). */}
+          <Select
+            value={srcCurrency}
+            onChange={onPickSource}
+            ariaLabel="Amount currency"
+            className="shrink-0"
+            menuWidth={256}
+            searchable
+            options={sourceOptions}
+          />
+          {/* Right: convert-to / view-in currency. */}
+          <Select
+            value={viewCurrency ?? ""}
+            onChange={onPickView}
+            ariaLabel="Convert to currency"
+            placeholder="to…"
+            className="shrink-0"
+            menuWidth={256}
+            searchable
+            options={viewOptions}
+          />
+          {viewCurrency && (
+            <button
+              type="button"
+              onClick={clearView}
+              aria-label="Clear conversion and edit the source value"
+              title="Clear conversion"
+              className="field flex shrink-0 cursor-pointer items-center justify-center px-2 py-2 text-ink-muted transition-colors hover:text-ink"
+            >
+              <ClearIcon />
+            </button>
+          )}
+        </div>
       </div>
       <p className="mt-1.5 text-xs text-ink-subtle">
         {viewCurrency && rateText ? (
           <>
-            Showing{" "}
             {srcAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
-            {srcCurrency} converted to {viewCurrency} at {rateText} {viewCurrency}/
-            {srcCurrency}.
+            {srcCurrency} at {rateText} {viewCurrency}/{srcCurrency}.
             {ratesDate && (
               <>
                 {" "}
@@ -172,8 +171,7 @@ export default function AmountInput() {
           </>
         ) : (
           <>
-            Pick a second currency on the right to view this {sourceLabel} value
-            converted.
+            Pick a second currency to convert.
             {ratesDate && (
               <span className="text-ink-subtle/80">
                 {" "}

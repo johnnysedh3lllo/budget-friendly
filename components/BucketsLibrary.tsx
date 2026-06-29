@@ -87,7 +87,7 @@ export default function BucketsLibrary() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex flex-col lg:min-h-0 lg:flex-1">
       <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
         <h2 className="text-lg">Library</h2>
         {savedBuckets.length > 0 && (
@@ -95,7 +95,7 @@ export default function BucketsLibrary() {
         )}
       </div>
 
-      <div className="surface bf-scroll min-h-[7rem] flex-1 overflow-y-auto p-1.5">
+      <div className="surface bf-scroll min-h-[15rem] overflow-y-auto p-1.5 lg:min-h-[7rem] lg:flex-1">
         {savedBuckets.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 py-8 text-center">
             <BookmarkIcon />
@@ -103,13 +103,8 @@ export default function BucketsLibrary() {
               No saved buckets yet
             </p>
             <p className="max-w-[22rem] text-xs text-ink-subtle">
-              Build a bucket, then hit{" "}
-              <span className="font-semibold text-ink-muted">Save</span> to keep
-              it here — or{" "}
-              <span className="font-semibold text-ink-muted">
-                Start from rule
-              </span>{" "}
-              above.
+              Build a bucket and{" "}
+              <span className="font-semibold text-ink-muted">Save</span> it here.
             </p>
           </div>
         ) : (

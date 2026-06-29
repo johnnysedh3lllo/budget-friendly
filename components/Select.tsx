@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { scrollActiveIntoView } from "@/lib/scroll";
+
+// useLayoutEffect on the client, useEffect on the server (avoids the SSR warning
+// while still positioning the menu before paint).
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export type SelectOption = {
   value: string;
@@ -34,7 +40,7 @@ export default function Select({
   placeholder,
   ariaLabel,
   className,
-  menuClassName,
+  menuWidth,
   searchable = false,
   triggerClassName,
   triggerChildren,
@@ -46,8 +52,8 @@ export default function Select({
   ariaLabel: string;
   /** wrapper sizing, e.g. "w-full" or "shrink-0" */
   className?: string;
-  /** menu position/width, e.g. "left-0 right-0" or "right-0 w-44" */
-  menuClassName?: string;
+  /** Fixed menu width in px; defaults to matching the trigger's width. */
+  menuWidth?: number;
   /** Show a search field that filters/ranks options by closest match. */
   searchable?: boolean;
   /** Override the trigger's classes (e.g. to render a compact icon button). */
@@ -57,7 +63,14 @@ export default function Select({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  // Fixed-position coords for the portaled menu (null while closed).
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
@@ -84,9 +97,10 @@ export default function Select({
       scrollActiveIntoView(listRef.current, activeRef.current),
     );
     const onDoc = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const t = e.target as Node;
+      // The menu lives in a portal (outside `ref`), so check it too.
+      if (ref.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -98,6 +112,35 @@ export default function Select({
       document.removeEventListener("keydown", onKey);
     };
   }, [open, searchable]);
+
+  // Position the portaled menu under the trigger with fixed coords, right-aligned
+  // to the trigger and clamped into the viewport (so it never spills off-screen,
+  // regardless of any ancestor's overflow clipping). Recomputed on scroll/resize.
+  useIsoLayoutEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    const compute = () => {
+      const trigger = ref.current;
+      if (!trigger) return;
+      const tr = trigger.getBoundingClientRect();
+      const margin = 8;
+      const vw = window.innerWidth;
+      const width = Math.min(menuWidth ?? tr.width, vw - margin * 2);
+      // Align the menu's right edge to the trigger's, then keep it on-screen.
+      let left = tr.right - width;
+      left = Math.max(margin, Math.min(left, vw - margin - width));
+      setPos({ top: tr.bottom + 8, left, width });
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    window.addEventListener("scroll", compute, true);
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+    };
+  }, [open, menuWidth]);
 
   return (
     <div ref={ref} className={`relative ${className ?? ""}`}>
@@ -126,12 +169,19 @@ export default function Select({
         )}
       </button>
 
-      {open && (
+      {open &&
+        pos &&
+        typeof document !== "undefined" &&
+        createPortal(
         <div
-          className={`surface-raised absolute z-30 mt-2 flex flex-col overflow-hidden ${
-            menuClassName ?? "left-0 right-0"
-          }`}
-          style={{ borderRadius: "var(--radius-md)" }}
+          ref={menuRef}
+          className="surface-raised fixed z-50 flex flex-col overflow-hidden"
+          style={{
+            top: pos.top,
+            left: pos.left,
+            width: pos.width,
+            borderRadius: "var(--radius-md)",
+          }}
         >
           {searchable && (
             <div className="border-b p-1.5">
@@ -197,8 +247,9 @@ export default function Select({
               })
             )}
           </div>
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </div>
   );
 }

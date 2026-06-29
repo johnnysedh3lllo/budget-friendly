@@ -363,7 +363,7 @@ function SplitForm({
                 submitList();
               }
             }}
-            placeholder="Name then %, comma-separated — e.g. Rent 35, School 20"
+            placeholder="e.g. Rent 35, Food 20, Savings 15"
             aria-label="Add several splits from a list"
             className="min-h-6 min-w-[9rem] flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-subtle"
           />
@@ -385,7 +385,7 @@ function SplitForm({
           </div>
         ) : (
           <span className="flex min-h-6 min-w-[9rem] flex-1 items-center text-base text-ink-subtle">
-            Click a block on the bar to edit it — or add a new split.
+            Pick a block to edit, or add a split.
           </span>
         )}
 
