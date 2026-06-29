@@ -16,6 +16,7 @@ import {
   Space_Mono,
 } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 // One distinct family per theme (see the [data-theme] blocks in globals.css),
@@ -137,6 +138,7 @@ export default function RootLayout({
       <body className="min-h-full">
         {children}
         <ServiceWorkerRegister />
+        <Analytics />
       </body>
     </html>
   );
