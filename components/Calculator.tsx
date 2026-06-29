@@ -5,8 +5,8 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useBudget, selectUnallocated } from "@/lib/store";
 import { formatMoney, roundPercent } from "@/lib/format";
 import AmountInput from "./AmountInput";
-import TemplatePicker from "./TemplatePicker";
 import BucketBar from "./BucketBar";
+import SplitsLibrary from "./SplitsLibrary";
 import Summary from "./Summary";
 
 export default function Calculator() {
@@ -34,10 +34,7 @@ export default function Calculator() {
           className="bf-reveal bf-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-4 sm:gap-5 sm:px-6 sm:pt-6 lg:flex-[1.4] lg:pb-6"
           style={{ "--reveal-d": "0.05s" } as CSSProperties}
         >
-          <div className="flex flex-col gap-4 sm:gap-5">
-            <AmountInput />
-            <TemplatePicker />
-          </div>
+          <AmountInput />
 
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -62,6 +59,8 @@ export default function Calculator() {
 
             <BucketBar />
           </div>
+
+          <SplitsLibrary />
 
           <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
             <button

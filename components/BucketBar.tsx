@@ -9,6 +9,7 @@ import {
 } from "@/lib/store";
 import { partitionColor, PALETTE_SIZE } from "@/lib/colors";
 import { formatPercent, roundPercent, currencyOf } from "@/lib/format";
+import SaveSplit from "./SaveSplit";
 
 /** Pick the label ink per palette colour from its OKLCH lightness. */
 function usePaletteInk(): string[] {
@@ -135,10 +136,13 @@ export default function BucketBar() {
 
       {/* The split bar below */}
       <div>
-      <div className="mb-2 flex items-baseline justify-between">
-        <span className="text-sm font-semibold text-ink-muted">
-          How your 100% is split
-        </span>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-ink-muted">
+            How your 100% is split
+          </span>
+          <SaveSplit />
+        </div>
         <span className="num text-sm font-semibold text-ink-muted">
           {roundPercent(allocated)}
           <span className="text-ink-subtle">/100</span>

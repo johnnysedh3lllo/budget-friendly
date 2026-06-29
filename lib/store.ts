@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Partition, Template, ThemeName } from "./types";
+import type { Partition, SavedSplit, Template, ThemeName } from "./types";
 import { THEMES } from "./types";
 import { clamp } from "./format";
 import { detectCurrency } from "./detect-currency";
@@ -114,6 +114,10 @@ type State = {
   /** True once the user explicitly picks a currency — stops location auto-detect. */
   currencyPinned: boolean;
   partitions: Partition[];
+  /** Splits the user saved to reuse, newest first; shown above the built-ins. */
+  savedSplits: SavedSplit[];
+  /** Built-in template ids the user dismissed from the library. */
+  hiddenTemplateIds: string[];
   theme: ThemeName;
   hasHydrated: boolean;
   /** Id of the most recently added bucket, so its row can grab focus. */
@@ -139,6 +143,11 @@ type Actions = {
   recolorPartition: (id: string, colorIndex: number) => void;
   clearPartitions: () => void;
   applyTemplate: (template: Template) => void;
+  applySavedSplit: (split: SavedSplit) => void;
+  saveSplit: (name: string) => void;
+  deleteSplit: (id: string) => void;
+  hideTemplate: (id: string) => void;
+  restoreTemplates: () => void;
   distributeEvenly: () => void;
   fillUnallocated: (id: string) => void;
   reset: () => void;
@@ -160,6 +169,8 @@ export const useBudget = create<State & Actions>()(
       viewCurrency: null,
       currencyPinned: false,
       partitions: DEFAULT_PARTITIONS,
+      savedSplits: [],
+      hiddenTemplateIds: [],
       theme: "brutalist",
       hasHydrated: false,
       lastAddedId: null,
@@ -339,6 +350,49 @@ export const useBudget = create<State & Actions>()(
           })),
         })),
 
+      // Load a saved split back into the editor, keeping its bucket colours.
+      applySavedSplit: (split) =>
+        set(() => ({
+          partitions: split.slices.map((slice) => ({
+            id: newId(),
+            name: slice.name,
+            percent: slice.percent,
+            colorIndex: slice.colorIndex,
+          })),
+        })),
+
+      // Snapshot the current split into the library (newest first).
+      saveSplit: (name) =>
+        set((s) => ({
+          savedSplits: [
+            {
+              id: newId(),
+              name: name.trim().slice(0, 40) || "My split",
+              slices: s.partitions.map((p) => ({
+                name: p.name,
+                percent: p.percent,
+                colorIndex: p.colorIndex,
+              })),
+            },
+            ...s.savedSplits,
+          ],
+        })),
+
+      deleteSplit: (id) =>
+        set((s) => ({
+          savedSplits: s.savedSplits.filter((x) => x.id !== id),
+        })),
+
+      // Dismiss a built-in rule from the library (restorable).
+      hideTemplate: (id) =>
+        set((s) => ({
+          hiddenTemplateIds: s.hiddenTemplateIds.includes(id)
+            ? s.hiddenTemplateIds
+            : [...s.hiddenTemplateIds, id],
+        })),
+
+      restoreTemplates: () => set({ hiddenTemplateIds: [] }),
+
       distributeEvenly: () =>
         set((s) => {
           const n = s.partitions.length;
@@ -415,6 +469,8 @@ export const useBudget = create<State & Actions>()(
         viewCurrency: s.viewCurrency,
         currencyPinned: s.currencyPinned,
         partitions: s.partitions,
+        savedSplits: s.savedSplits,
+        hiddenTemplateIds: s.hiddenTemplateIds,
         theme: s.theme,
       }),
       onRehydrateStorage: () => (state) => {

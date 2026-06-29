@@ -47,3 +47,10 @@ export type Template = {
   tagline: string;
   slices: { name: string; percent: number }[];
 };
+
+/** A split the user saved to reuse — keeps each bucket's colour. */
+export type SavedSplit = {
+  id: string;
+  name: string;
+  slices: { name: string; percent: number; colorIndex: number }[];
+};
