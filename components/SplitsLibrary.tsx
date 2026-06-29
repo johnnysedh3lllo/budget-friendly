@@ -11,6 +11,8 @@ type Item =
   | { kind: "saved"; id: string; name: string; slices: Slice[] }
   | { kind: "builtin"; id: string; name: string; tagline: string; slices: Slice[] };
 
+type View = "list" | "grid";
+
 /** Render slices as the multi-bucket paste text: "Savings 30, Rent 10". */
 function slicesToText(slices: { name: string; percent: number }[]): string {
   return slices
@@ -26,7 +28,7 @@ export function MiniSplitBar({
 }) {
   return (
     <div
-      className="flex h-2 w-full overflow-hidden"
+      className="flex h-1.5 w-full overflow-hidden"
       style={{ borderRadius: "var(--radius-pill)", background: "var(--surface-2)" }}
     >
       {slices.map((s, i) => (
@@ -40,8 +42,9 @@ export function MiniSplitBar({
 }
 
 // The library of starting splits: the user's saved splits first (newest at the
-// top), then the built-in rules. Each row can be loaded into the editor, copied
-// as paste-able text, or removed (saved → deleted, built-in → hidden).
+// top), then the built-in rules. Borderless rows with hover affordances (like
+// the summary list), a list/grid view switch, and an internal scroll so it can
+// hold many entries while filling the space under the split bar.
 export default function SplitsLibrary() {
   const savedSplits = useBudget((s) => s.savedSplits);
   const hiddenTemplateIds = useBudget((s) => s.hiddenTemplateIds);
@@ -50,6 +53,7 @@ export default function SplitsLibrary() {
   const deleteSplit = useBudget((s) => s.deleteSplit);
   const hideTemplate = useBudget((s) => s.hideTemplate);
   const restoreTemplates = useBudget((s) => s.restoreTemplates);
+  const [view, setView] = useState<View>("list");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const items: Item[] = [
@@ -77,15 +81,11 @@ export default function SplitsLibrary() {
   }
 
   function onCopy(item: Item) {
-    const text = slicesToText(item.slices);
     navigator.clipboard
-      ?.writeText(text)
+      ?.writeText(slicesToText(item.slices))
       .then(() => {
         setCopiedId(item.id);
-        setTimeout(
-          () => setCopiedId((c) => (c === item.id ? null : c)),
-          1200,
-        );
+        setTimeout(() => setCopiedId((c) => (c === item.id ? null : c)), 1200);
       })
       .catch(() => {});
   }
@@ -96,85 +96,161 @@ export default function SplitsLibrary() {
   }
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-2">
+    <div className="flex flex-col lg:min-h-0 lg:flex-1">
+      <div className="mb-2 flex items-center justify-between gap-2 lg:shrink-0">
         <h2 className="text-lg">Start from a split</h2>
-        {hiddenTemplateIds.length > 0 && (
-          <button
-            onClick={restoreTemplates}
-            className="text-xs font-semibold text-ink-subtle underline-offset-2 hover:text-ink-muted hover:underline"
-          >
-            Restore defaults
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {hiddenTemplateIds.length > 0 && (
+            <button
+              onClick={restoreTemplates}
+              className="text-xs font-semibold text-ink-subtle underline-offset-2 hover:text-ink-muted hover:underline"
+            >
+              Restore defaults
+            </button>
+          )}
+          <ViewSwitch view={view} onChange={setView} />
+        </div>
       </div>
 
       {items.length === 0 ? (
-        <p className="surface p-4 text-center text-sm text-ink-subtle">
-          No splits here. Build a split above and hit{" "}
+        <p className="text-sm text-ink-subtle">
+          No splits here. Build one above and hit{" "}
           <span className="font-semibold text-ink-muted">Save</span> to reuse it.
         </p>
       ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {items.map((item) => (
-            <div
-              key={`${item.kind}-${item.id}`}
-              className="surface flex flex-col gap-2 p-2.5"
-            >
-              <MiniSplitBar slices={item.slices} />
-              <div className="flex items-center gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate font-semibold text-ink">
-                      {item.name}
-                    </span>
-                    {item.kind === "saved" && (
-                      <span className="chip shrink-0 text-[10px] uppercase tracking-wide">
-                        Saved
-                      </span>
-                    )}
-                  </div>
-                  <p className="truncate text-xs text-ink-subtle">
-                    {item.kind === "builtin"
-                      ? item.tagline
-                      : slicesToText(item.slices)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-0.5">
-                  <IconButton
-                    label={`Load ${item.name} into the editor`}
+        <div className="bf-scroll -mx-1 px-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+          <ul
+            className={
+              view === "grid"
+                ? "grid gap-0.5 sm:grid-cols-2"
+                : "flex flex-col gap-0.5"
+            }
+          >
+            {items.map((item) => (
+              <li key={`${item.kind}-${item.id}`} className="group">
+                <div className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2">
+                  <button
+                    type="button"
                     onClick={() => onLoad(item)}
+                    aria-label={`Load ${item.name} into the editor`}
+                    className="flex min-w-0 flex-1 flex-col gap-1 text-left"
                   >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    label={
-                      copiedId === item.id
-                        ? `${item.name} copied`
-                        : `Copy ${item.name} as text`
-                    }
-                    onClick={() => onCopy(item)}
-                  >
-                    {copiedId === item.id ? <CheckIcon /> : <CopyIcon />}
-                  </IconButton>
-                  <IconButton
-                    label={
-                      item.kind === "saved"
-                        ? `Delete ${item.name}`
-                        : `Hide ${item.name}`
-                    }
-                    onClick={() => onRemove(item)}
-                    danger
-                  >
-                    <TrashIcon />
-                  </IconButton>
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate font-semibold text-ink">
+                        {item.name}
+                      </span>
+                      {item.kind === "saved" && (
+                        <span className="chip shrink-0 text-[10px] uppercase tracking-wide">
+                          Saved
+                        </span>
+                      )}
+                    </span>
+                    <span className="truncate text-xs text-ink-subtle">
+                      {item.kind === "builtin"
+                        ? item.tagline
+                        : slicesToText(item.slices)}
+                    </span>
+                  </button>
+
+                  <div className="hidden w-20 shrink-0 sm:block">
+                    <MiniSplitBar slices={item.slices} />
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+                    <IconButton
+                      label={`Load ${item.name}`}
+                      onClick={() => onLoad(item)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      label={
+                        copiedId === item.id
+                          ? `${item.name} copied`
+                          : `Copy ${item.name} as text`
+                      }
+                      onClick={() => onCopy(item)}
+                    >
+                      {copiedId === item.id ? <CheckIcon /> : <CopyIcon />}
+                    </IconButton>
+                    <IconButton
+                      label={
+                        item.kind === "saved"
+                          ? `Delete ${item.name}`
+                          : `Hide ${item.name}`
+                      }
+                      onClick={() => onRemove(item)}
+                      danger
+                    >
+                      <TrashIcon />
+                    </IconButton>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
+  );
+}
+
+function ViewSwitch({
+  view,
+  onChange,
+}: {
+  view: View;
+  onChange: (v: View) => void;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Library layout"
+      className="flex items-center gap-0.5 rounded-[var(--radius-sm)] p-0.5"
+      style={{ background: "var(--surface-2)" }}
+    >
+      <ViewButton
+        active={view === "list"}
+        label="List view"
+        onClick={() => onChange("list")}
+      >
+        <ListIcon />
+      </ViewButton>
+      <ViewButton
+        active={view === "grid"}
+        label="Grid view"
+        onClick={() => onChange("grid")}
+      >
+        <GridIcon />
+      </ViewButton>
+    </div>
+  );
+}
+
+function ViewButton({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      className="rounded-[var(--radius-sm)] p-1 text-ink-subtle transition-colors data-[on=true]:text-ink"
+      data-on={active}
+      style={active ? { background: "var(--surface)" } : undefined}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -237,6 +313,25 @@ function TrashIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6" />
       <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+function ListIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </svg>
+  );
+}
+
+function GridIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
   );
 }

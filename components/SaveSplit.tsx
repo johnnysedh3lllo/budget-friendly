@@ -2,20 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { useBudget } from "@/lib/store";
+import { useBudget, selectIsDirty } from "@/lib/store";
 import { partitionColor } from "@/lib/colors";
 import { formatMoney, roundPercent } from "@/lib/format";
 import { MiniSplitBar } from "./SplitsLibrary";
 
-// "Save" button beside the split heading. Opens a modal that previews the
-// current breakdown and asks for a name before saving it to the library.
+// Icon-only "save" button beside the split heading: a dot marks unsaved edits,
+// and a green tick flashes after a save. Clicking opens a modal that previews
+// the current breakdown and asks for a name before saving it to the library.
 export default function SaveSplit() {
   const partitions = useBudget((s) => s.partitions);
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
   const saveSplit = useBudget((s) => s.saveSplit);
+  const dirty = useBudget(selectIsDirty);
 
   const [open, setOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +33,8 @@ export default function SaveSplit() {
     saveSplit(name);
     setName("");
     setOpen(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1200);
   }
 
   return (
@@ -38,11 +43,18 @@ export default function SaveSplit() {
         type="button"
         onClick={() => setOpen(true)}
         disabled={!canSave}
-        title="Save this split to your library"
-        className="btn btn-ghost gap-1.5 text-sm"
+        aria-label={dirty ? "Save split — unsaved changes" : "Save split"}
+        title={dirty ? "Save this split — you have unsaved changes" : "Save this split"}
+        className="relative rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
       >
-        <SaveIcon />
-        Save
+        {saved ? <CheckIcon /> : <SaveIcon />}
+        {dirty && !saved && (
+          <span
+            aria-hidden
+            className="absolute right-0.5 top-0.5 size-2 rounded-full ring-2 ring-[var(--surface)]"
+            style={{ background: "var(--primary)" }}
+          />
+        )}
       </button>
 
       <AnimatePresence>
@@ -153,6 +165,14 @@ function SaveIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
       <path d="M17 21v-8H7v8M7 3v5h8" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="m20 6-11 11-5-5" />
     </svg>
   );
 }
