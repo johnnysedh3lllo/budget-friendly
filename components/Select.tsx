@@ -36,6 +36,8 @@ export default function Select({
   className,
   menuClassName,
   searchable = false,
+  triggerClassName,
+  triggerChildren,
 }: {
   value: string;
   options: SelectOption[];
@@ -48,6 +50,10 @@ export default function Select({
   menuClassName?: string;
   /** Show a search field that filters/ranks options by closest match. */
   searchable?: boolean;
+  /** Override the trigger's classes (e.g. to render a compact icon button). */
+  triggerClassName?: string;
+  /** Replace the default label+chevron trigger content (e.g. an icon). */
+  triggerChildren?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -101,16 +107,23 @@ export default function Select({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
-        className="field flex w-full cursor-pointer items-center justify-between gap-2 py-2 pl-3 pr-2 text-sm font-semibold text-ink"
+        className={
+          triggerClassName ??
+          "field flex w-full cursor-pointer items-center justify-between gap-2 py-2 pl-3 pr-2 text-sm font-semibold text-ink"
+        }
       >
-        <span className="truncate">
-          {sel ? (
-            sel.label
-          ) : (
-            <span className="text-ink-subtle">{placeholder}</span>
-          )}
-        </span>
-        <Chevron open={open} />
+        {triggerChildren ?? (
+          <>
+            <span className="truncate">
+              {sel ? (
+                sel.label
+              ) : (
+                <span className="text-ink-subtle">{placeholder}</span>
+              )}
+            </span>
+            <Chevron open={open} />
+          </>
+        )}
       </button>
 
       {open && (

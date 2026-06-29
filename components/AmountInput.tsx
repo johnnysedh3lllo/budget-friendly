@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useBudget } from "@/lib/store";
 import { CURRENCIES, currencyOf } from "@/lib/format";
+import { convertAmount, useRates } from "@/lib/rates";
 import Select from "./Select";
+import ConvertButton from "./ConvertButton";
 
 export default function AmountInput() {
   const amount = useBudget((s) => s.amount);
@@ -11,8 +13,21 @@ export default function AmountInput() {
   const setAmount = useBudget((s) => s.setAmount);
   const setCurrency = useBudget((s) => s.setCurrency);
   const [focused, setFocused] = useState(false);
+  const { table, date, offline } = useRates();
 
   const symbol = currencyOf(currency).symbol;
+
+  // Rewrite the amount into the target currency, then switch to it. Percentages
+  // are unaffected, so every bucket's figure re-derives automatically.
+  function handleConvert(target: string) {
+    if (target === currency) return;
+    const next = convertAmount(amount, currency, target, table);
+    if (next == null) return; // no rate for this pair — leave things untouched
+    setAmount(next);
+    setCurrency(target);
+  }
+
+  const ratesDate = formatRatesDate(date);
 
   // While focused, show the raw editable number; otherwise show grouping.
   const display = focused
@@ -66,7 +81,36 @@ export default function AmountInput() {
             keywords: c.countries,
           }))}
         />
+        <ConvertButton
+          current={currency}
+          table={table}
+          onConvert={handleConvert}
+        />
       </div>
+      <p className="mt-1.5 text-xs text-ink-subtle">
+        Convert to another currency with the{" "}
+        <span aria-hidden>⇄</span> button — your split stays the same.
+        {ratesDate && (
+          <>
+            {" "}
+            <span className="text-ink-subtle/80">
+              Rates {offline ? "saved" : "as of"} {ratesDate}
+              {offline ? " · offline" : ""}.
+            </span>
+          </>
+        )}
+      </p>
     </div>
   );
+}
+
+/** "2026-06-28" → "28 Jun 2026"; empty string if unparseable. */
+function formatRatesDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
