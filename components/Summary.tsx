@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { useBudget, selectUnallocated } from "@/lib/store";
-import { partitionColor } from "@/lib/colors";
+import { splitColor } from "@/lib/colors";
 import {
   formatMoney,
   formatMoneyCompact,
@@ -14,11 +14,11 @@ import {
 export default function Summary({ onPick }: { onPick?: () => void } = {}) {
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
-  const partitions = useBudget((s) => s.partitions);
+  const splits = useBudget((s) => s.splits);
   const selectedId = useBudget((s) => s.selectedId);
   const setSelected = useBudget((s) => s.setSelected);
-  const removePartition = useBudget((s) => s.removePartition);
-  const unallocated = selectUnallocated(partitions);
+  const removeSplit = useBudget((s) => s.removeSplit);
+  const unallocated = selectUnallocated(splits);
   // "Done" when the remainder rounds away at display precision, so the copy
   // matches what's shown (no "0% left" while a sliver of dust lingers).
   const done = roundPercent(unallocated) === 0;
@@ -36,7 +36,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
   }, []);
   useEffect(() => {
     updateShadow();
-  }, [partitions, unallocated, updateShadow]);
+  }, [splits, unallocated, updateShadow]);
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
@@ -74,7 +74,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
           onScroll={updateShadow}
           className="bf-scroll flex flex-1 flex-col gap-0.5 overflow-y-auto pr-1"
         >
-          {partitions.map((p) => (
+          {splits.map((p) => (
             <li key={p.id} className="group relative flex items-center">
               <button
                 onClick={() => {
@@ -88,7 +88,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
                 <span
                   aria-hidden
                   className="size-3 shrink-0 rounded-full"
-                  style={{ background: partitionColor(p.colorIndex) }}
+                  style={{ background: splitColor(p.colorIndex) }}
                 />
                 <span className="min-w-0 flex-1 truncate font-semibold text-ink">
                   {p.name || "Untitled"}
@@ -101,9 +101,9 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
                 </span>
               </button>
               <button
-                onClick={() => removePartition(p.id)}
-                aria-label={`Remove ${p.name || "bucket"}`}
-                title="Remove bucket"
+                onClick={() => removeSplit(p.id)}
+                aria-label={`Remove ${p.name || "split"}`}
+                title="Remove split"
                 className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full p-2 text-ink-subtle opacity-60 transition-all hover:bg-[color-mix(in_oklch,var(--danger)_16%,transparent)] hover:text-[var(--danger)] hover:opacity-100 group-hover:opacity-100"
               >
                 <TrashIcon />
@@ -138,7 +138,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
           : `${formatPercent(unallocated)} (${formatMoneyCompact(
               amount * (unallocated / 100),
               currency,
-            )}) is still waiting for a home — drag a slider up or add a bucket.`}
+            )}) is still waiting for a home — drag a slider up or add a split.`}
       </p>
     </div>
   );
@@ -188,8 +188,8 @@ function StatusPill({
 function Donut() {
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
-  const partitions = useBudget((s) => s.partitions);
-  const unallocated = selectUnallocated(partitions);
+  const splits = useBudget((s) => s.splits);
+  const unallocated = selectUnallocated(splits);
 
   const size = 180;
   const stroke = 22;
@@ -197,11 +197,11 @@ function Donut() {
   const c = 2 * Math.PI * r;
 
   let offset = 0;
-  const segments = partitions
+  const segments = splits
     .filter((p) => p.percent > 0)
     .map((p) => {
       const len = (p.percent / 100) * c;
-      const seg = { id: p.id, color: partitionColor(p.colorIndex), len, offset };
+      const seg = { id: p.id, color: splitColor(p.colorIndex), len, offset };
       offset += len;
       return seg;
     });

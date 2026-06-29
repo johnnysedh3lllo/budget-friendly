@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Partition, SavedSplit, Template, ThemeName } from "./types";
+import type { Split, SavedBucket, Template, ThemeName } from "./types";
 import { THEMES } from "./types";
 import { clamp } from "./format";
 import { detectCurrency } from "./detect-currency";
@@ -16,21 +16,21 @@ function newId(): string {
   return `p-${idCounter}`;
 }
 
-function nextColorIndex(partitions: Partition[]): number {
-  const used = new Set(partitions.map((p) => p.colorIndex));
+function nextColorIndex(splits: Split[]): number {
+  const used = new Set(splits.map((p) => p.colorIndex));
   for (let i = 0; i < 8; i++) if (!used.has(i)) return i;
-  return partitions.length % 8;
+  return splits.length % 8;
 }
 
-export type ParsedBucket = { name: string; percent: number };
+export type ParsedSplit = { name: string; percent: number };
 
 /**
- * Parse "Rent 35, Food 15, Fun 5" into buckets. Segments split on commas or
+ * Parse "Rent 35, Food 15, Fun 5" into splits. Segments split on commas or
  * newlines; within a segment the LAST number is the percent (so multi-word
  * names like "Emergency fund 10" work), and a trailing "%" is optional.
- * A segment with no number becomes a 0% bucket.
+ * A segment with no number becomes a 0% split.
  */
-export function parseBucketText(text: string): ParsedBucket[] {
+export function parseSplitText(text: string): ParsedSplit[] {
   return text
     .split(/[,\n]+/)
     .map((s) => s.trim())
@@ -38,8 +38,8 @@ export function parseBucketText(text: string): ParsedBucket[] {
     .map((seg) => {
       const m = seg.match(/^(.*?)[\s:=-]*?(\d+(?:\.\d+)?)\s*%?$/);
       if (m) {
-        const name = m[1].trim() || "Bucket";
-        // Keep decimals — "Rent 12.5" is a valid 12.5% bucket.
+        const name = m[1].trim() || "Split";
+        // Keep decimals — "Rent 12.5" is a valid 12.5% split.
         return { name, percent: Math.abs(Number(m[2])) };
       }
       return { name: seg, percent: 0 };
@@ -94,16 +94,16 @@ export function applyThemeToDom(theme: ThemeName) {
   }
 }
 
-const DEFAULT_PARTITIONS: Partition[] = [
+const DEFAULT_SPLITS: Split[] = [
   { id: "seed-needs", name: "Needs", percent: 50, colorIndex: 0 },
   { id: "seed-wants", name: "Wants", percent: 30, colorIndex: 1 },
   { id: "seed-savings", name: "Savings", percent: 20, colorIndex: 3 },
 ];
 
-type Slice = { name: string; percent: number; colorIndex: number };
+type StoredSplit = { name: string; percent: number; colorIndex: number };
 
-/** Strip a split down to its saveable slices (no ids). */
-function slicesOf(parts: Partition[]): Slice[] {
+/** Strip the live splits down to their saveable form (no ids). */
+function splitsOf(parts: Split[]): StoredSplit[] {
   return parts.map((p) => ({
     name: p.name,
     percent: p.percent,
@@ -111,9 +111,9 @@ function slicesOf(parts: Partition[]): Slice[] {
   }));
 }
 
-/** A stable signature of a split (ignores ids) — used to detect unsaved edits. */
-function splitSig(slices: Slice[]): string {
-  return JSON.stringify(slices.map((s) => [s.name, s.percent, s.colorIndex]));
+/** A stable signature of a bucket's splits (ignores ids) — detects unsaved edits. */
+function bucketSig(splits: StoredSplit[]): string {
+  return JSON.stringify(splits.map((s) => [s.name, s.percent, s.colorIndex]));
 }
 
 type State = {
@@ -129,20 +129,21 @@ type State = {
   viewCurrency: string | null;
   /** True once the user explicitly picks a currency — stops location auto-detect. */
   currencyPinned: boolean;
-  partitions: Partition[];
-  /** Splits the user saved to reuse, newest first. */
-  savedSplits: SavedSplit[];
-  /** The saved split currently loaded, if any — so Save updates it in place. */
-  activeSplitId: string | null;
-  /** The split as of the last save/load — drives the dirty dot and Revert. */
-  savedBaseline: { name: string; percent: number; colorIndex: number }[];
+  /** The live splits that make up the current bucket. */
+  splits: Split[];
+  /** Buckets the user saved to reuse, newest first. */
+  savedBuckets: SavedBucket[];
+  /** The saved bucket currently loaded, if any — so Save updates it in place. */
+  activeBucketId: string | null;
+  /** The bucket's splits as of the last save/load — drives the dirty dot + Revert. */
+  savedBaseline: StoredSplit[];
   /** Persisted library layout preference. */
   libraryView: "list" | "grid";
   theme: ThemeName;
   hasHydrated: boolean;
-  /** Id of the most recently added bucket, so its row can grab focus. */
+  /** Id of the most recently added split, so its row can grab focus. */
   lastAddedId: string | null;
-  /** The bucket currently open in the editor form (shared across panels). */
+  /** The split currently open in the editor form (shared across panels). */
   selectedId: string | null;
 };
 
@@ -153,21 +154,21 @@ type Actions = {
   clearView: () => void;
   syncWorking: (amount: number, currency: string) => void;
   setCurrencyAuto: (code: string) => void;
-  addPartition: () => void;
-  addPartitionsFromText: (text: string) => void;
-  removePartition: (id: string) => void;
-  renamePartition: (id: string, name: string) => void;
+  addSplit: () => void;
+  addSplitsFromText: (text: string) => void;
+  removeSplit: (id: string) => void;
+  renameSplit: (id: string, name: string) => void;
   setPercent: (id: string, percent: number) => void;
-  setPartitionAmount: (id: string, value: number) => void;
+  setSplitAmount: (id: string, value: number) => void;
   adjustPair: (index: number, leftPercent: number) => void;
-  recolorPartition: (id: string, colorIndex: number) => void;
-  clearPartitions: () => void;
+  recolorSplit: (id: string, colorIndex: number) => void;
+  clearSplits: () => void;
   applyTemplate: (template: Template) => void;
-  applySavedSplit: (split: SavedSplit) => void;
-  saveSplit: (name: string) => void;
-  updateSplit: (id: string) => void;
-  deleteSplit: (id: string) => void;
-  revertSplit: () => void;
+  applySavedBucket: (bucket: SavedBucket) => void;
+  saveBucket: (name: string) => void;
+  updateBucket: (id: string) => void;
+  deleteBucket: (id: string) => void;
+  revertBucket: () => void;
   setLibraryView: (view: "list" | "grid") => void;
   distributeEvenly: () => void;
   fillUnallocated: (id: string) => void;
@@ -189,10 +190,10 @@ export const useBudget = create<State & Actions>()(
       srcCurrency: "USD",
       viewCurrency: null,
       currencyPinned: false,
-      partitions: DEFAULT_PARTITIONS,
-      savedSplits: [],
-      activeSplitId: null,
-      savedBaseline: slicesOf(DEFAULT_PARTITIONS),
+      splits: DEFAULT_SPLITS,
+      savedBuckets: [],
+      activeBucketId: null,
+      savedBaseline: splitsOf(DEFAULT_SPLITS),
       libraryView: "list",
       theme: "brutalist",
       hasHydrated: false,
@@ -235,23 +236,23 @@ export const useBudget = create<State & Actions>()(
       setCurrencyAuto: (code) =>
         set((s) => ({ srcCurrency: code, currency: s.viewCurrency ?? code })),
 
-      addPartition: () =>
+      addSplit: () =>
         set((s) => {
-          const allocated = s.partitions.reduce((t, p) => t + p.percent, 0);
+          const allocated = s.splits.reduce((t, p) => t + p.percent, 0);
           const room = 100 - allocated;
-          // Nothing to carve out once the split is fully allocated.
+          // Nothing to carve out once the bucket is fully allocated.
           if (room <= 0) return s;
           const id = newId();
           return {
-            // Append so the new bucket lands on the right, next to the
+            // Append so the new split lands on the right, next to the
             // unallocated space it carves from.
-            partitions: [
-              ...s.partitions,
+            splits: [
+              ...s.splits,
               {
                 id,
-                name: "New bucket",
+                name: "New split",
                 percent: Math.min(10, room),
-                colorIndex: nextColorIndex(s.partitions),
+                colorIndex: nextColorIndex(s.splits),
               },
             ],
             lastAddedId: id,
@@ -259,15 +260,15 @@ export const useBudget = create<State & Actions>()(
           };
         }),
 
-      // Append buckets parsed from text. Each is clamped to the room left at the
+      // Append splits parsed from text. Each is clamped to the room left at the
       // moment it's added, honouring the "never exceed 100%" rule; once room runs
-      // out, further buckets land at 0% for the user to adjust.
-      addPartitionsFromText: (text) =>
+      // out, further splits land at 0% for the user to adjust.
+      addSplitsFromText: (text) =>
         set((s) => {
-          const parsed = parseBucketText(text);
+          const parsed = parseSplitText(text);
           if (parsed.length === 0) return s;
-          const newParts: Partition[] = [];
-          let running = s.partitions.reduce((t, p) => t + p.percent, 0);
+          const newParts: Split[] = [];
+          let running = s.splits.reduce((t, p) => t + p.percent, 0);
           for (const item of parsed) {
             const room = Math.max(0, 100 - running);
             const pct = Math.min(item.percent, room);
@@ -276,73 +277,67 @@ export const useBudget = create<State & Actions>()(
               id: newId(),
               name: item.name.slice(0, 28),
               percent: pct,
-              colorIndex: nextColorIndex([...s.partitions, ...newParts]),
+              colorIndex: nextColorIndex([...s.splits, ...newParts]),
             });
           }
           return {
-            partitions: [...s.partitions, ...newParts],
+            splits: [...s.splits, ...newParts],
             lastAddedId: newParts[0]?.id ?? null,
             selectedId: newParts[0]?.id ?? null,
           };
         }),
 
-      removePartition: (id) =>
+      removeSplit: (id) =>
         set((s) => ({
-          partitions: s.partitions.filter((p) => p.id !== id),
+          splits: s.splits.filter((p) => p.id !== id),
           selectedId: s.selectedId === id ? null : s.selectedId,
         })),
 
-      renamePartition: (id, name) =>
+      renameSplit: (id, name) =>
         set((s) => ({
-          partitions: s.partitions.map((p) =>
-            p.id === id ? { ...p, name } : p,
-          ),
+          splits: s.splits.map((p) => (p.id === id ? { ...p, name } : p)),
         })),
 
-      // Block-at-available-room: a slice can grow only into the unallocated
+      // Block-at-available-room: a split can grow only into the unallocated
       // space. Lowering one frees room; raising past the room is impossible,
-      // which nudges the user to lower another slice first. Percent is kept at
+      // which nudges the user to lower another split first. Percent is kept at
       // full precision (no rounding) so amounts can land exactly.
       setPercent: (id, percent) =>
         set((s) => {
-          const others = s.partitions
+          const others = s.splits
             .filter((p) => p.id !== id)
             .reduce((t, p) => t + p.percent, 0);
           const max = 100 - others;
           const v = Number.isFinite(percent) ? percent : 0;
           const next = clamp(v, 0, max);
           return {
-            partitions: s.partitions.map((p) =>
-              p.id === id ? { ...p, percent: next } : p,
-            ),
+            splits: s.splits.map((p) => (p.id === id ? { ...p, percent: next } : p)),
           };
         }),
 
-      // Set a bucket by its currency figure: back-derive the percent so e.g.
+      // Set a split by its currency figure: back-derive the percent so e.g.
       // "₦50,000" lands exactly, whatever the total. Clamped to available room.
-      setPartitionAmount: (id, value) =>
+      setSplitAmount: (id, value) =>
         set((s) => {
           if (!(s.amount > 0)) return s; // can't derive a percent from nothing
-          const others = s.partitions
+          const others = s.splits
             .filter((p) => p.id !== id)
             .reduce((t, p) => t + p.percent, 0);
           const max = 100 - others;
           const v = Number.isFinite(value) ? Math.max(0, value) : 0;
           const pct = clamp((v / s.amount) * 100, 0, max);
           return {
-            partitions: s.partitions.map((p) =>
-              p.id === id ? { ...p, percent: pct } : p,
-            ),
+            splits: s.splits.map((p) => (p.id === id ? { ...p, percent: pct } : p)),
           };
         }),
 
-      // Move the boundary between bucket `index` and its right neighbour,
-      // trading percent between just those two (their combined share is fixed,
-      // so the unallocated remainder doesn't change).
+      // Move the boundary between split `index` and its right neighbour, trading
+      // percent between just those two (their combined share is fixed, so the
+      // unallocated remainder doesn't change).
       adjustPair: (index, leftPercent) =>
         set((s) => {
-          if (index < 0 || index >= s.partitions.length - 1) return s;
-          const parts = [...s.partitions];
+          if (index < 0 || index >= s.splits.length - 1) return s;
+          const parts = [...s.splits];
           const left = parts[index];
           const right = parts[index + 1];
           const sum = left.percent + right.percent;
@@ -350,97 +345,87 @@ export const useBudget = create<State & Actions>()(
           const newLeft = clamp(v, 0, sum);
           parts[index] = { ...left, percent: newLeft };
           parts[index + 1] = { ...right, percent: sum - newLeft };
-          return { partitions: parts };
+          return { splits: parts };
         }),
 
-      recolorPartition: (id, colorIndex) =>
+      recolorSplit: (id, colorIndex) =>
         set((s) => ({
-          partitions: s.partitions.map((p) =>
-            p.id === id ? { ...p, colorIndex } : p,
-          ),
+          splits: s.splits.map((p) => (p.id === id ? { ...p, colorIndex } : p)),
         })),
 
-      clearPartitions: () =>
-        set({ partitions: [], lastAddedId: null, selectedId: null }),
+      clearSplits: () =>
+        set({ splits: [], lastAddedId: null, selectedId: null }),
 
-      // Load a built-in rule as a starting point — not a saved split, so a
-      // later Save creates a new library entry (activeSplitId cleared).
+      // Load a built-in rule as a starting point — not a saved bucket, so a
+      // later Save creates a new library entry (activeBucketId cleared).
       applyTemplate: (template) =>
         set(() => {
-          const partitions = template.slices.map((slice, i) => ({
+          const splits = template.splits.map((part, i) => ({
             id: newId(),
-            name: slice.name,
-            percent: slice.percent,
+            name: part.name,
+            percent: part.percent,
             colorIndex: i % 8,
           }));
-          return {
-            partitions,
-            savedBaseline: slicesOf(partitions),
-            activeSplitId: null,
-          };
+          return { splits, savedBaseline: splitsOf(splits), activeBucketId: null };
         }),
 
-      // Load a saved split back into the editor, keeping its colours, and mark
+      // Load a saved bucket back into the editor, keeping its colours, and mark
       // it active so edits + Save update this entry in place.
-      applySavedSplit: (split) =>
+      applySavedBucket: (bucket) =>
         set(() => {
-          const partitions = split.slices.map((slice) => ({
+          const splits = bucket.splits.map((part) => ({
             id: newId(),
-            name: slice.name,
-            percent: slice.percent,
-            colorIndex: slice.colorIndex,
+            name: part.name,
+            percent: part.percent,
+            colorIndex: part.colorIndex,
           }));
-          return {
-            partitions,
-            savedBaseline: slicesOf(partitions),
-            activeSplitId: split.id,
-          };
+          return { splits, savedBaseline: splitsOf(splits), activeBucketId: bucket.id };
         }),
 
-      // Save the current split as a NEW library entry (newest first) and make
+      // Save the current bucket as a NEW library entry (newest first) and make
       // it the active one so further edits update it.
-      saveSplit: (name) =>
+      saveBucket: (name) =>
         set((s) => {
           const id = newId();
           return {
-            savedSplits: [
+            savedBuckets: [
               {
                 id,
-                name: name.trim().slice(0, 40) || "My split",
-                slices: slicesOf(s.partitions),
+                name: name.trim().slice(0, 40) || "My bucket",
+                splits: splitsOf(s.splits),
               },
-              ...s.savedSplits,
+              ...s.savedBuckets,
             ],
-            savedBaseline: slicesOf(s.partitions),
-            activeSplitId: id,
+            savedBaseline: splitsOf(s.splits),
+            activeBucketId: id,
           };
         }),
 
-      // Overwrite an existing saved split with the current edit (no rename).
-      updateSplit: (id) =>
+      // Overwrite an existing saved bucket with the current edit (no rename).
+      updateBucket: (id) =>
         set((s) => ({
-          savedSplits: s.savedSplits.map((x) =>
-            x.id === id ? { ...x, slices: slicesOf(s.partitions) } : x,
+          savedBuckets: s.savedBuckets.map((x) =>
+            x.id === id ? { ...x, splits: splitsOf(s.splits) } : x,
           ),
-          savedBaseline: slicesOf(s.partitions),
-          activeSplitId: id,
+          savedBaseline: splitsOf(s.splits),
+          activeBucketId: id,
         })),
 
-      deleteSplit: (id) =>
+      deleteBucket: (id) =>
         set((s) => ({
-          savedSplits: s.savedSplits.filter((x) => x.id !== id),
-          activeSplitId: s.activeSplitId === id ? null : s.activeSplitId,
+          savedBuckets: s.savedBuckets.filter((x) => x.id !== id),
+          activeBucketId: s.activeBucketId === id ? null : s.activeBucketId,
         })),
 
-      // Discard unsaved edits — restore the split to its last saved/loaded state.
-      revertSplit: () =>
+      // Discard unsaved edits — restore the bucket to its last saved/loaded state.
+      revertBucket: () =>
         set((s) => ({
-          partitions: (Array.isArray(s.savedBaseline) ? s.savedBaseline : []).map(
-            (slice) => ({
+          splits: (Array.isArray(s.savedBaseline) ? s.savedBaseline : []).map(
+            (part) => ({
               id: newId(),
-              name: slice.name,
-              percent: slice.percent,
-              colorIndex: slice.colorIndex,
+              name: part.name,
+              percent: part.percent,
+              colorIndex: part.colorIndex,
             }),
           ),
         })),
@@ -449,12 +434,12 @@ export const useBudget = create<State & Actions>()(
 
       distributeEvenly: () =>
         set((s) => {
-          const n = s.partitions.length;
+          const n = s.splits.length;
           if (n === 0) return s;
           const base = Math.floor(100 / n);
           let remainder = 100 - base * n;
           return {
-            partitions: s.partitions.map((p) => {
+            splits: s.splits.map((p) => {
               const extra = remainder > 0 ? 1 : 0;
               remainder -= extra;
               return { ...p, percent: base + extra };
@@ -462,14 +447,14 @@ export const useBudget = create<State & Actions>()(
           };
         }),
 
-      // Pour all remaining unallocated room into one slice.
+      // Pour all remaining unallocated room into one split.
       fillUnallocated: (id) =>
         set((s) => {
-          const allocated = s.partitions.reduce((t, p) => t + p.percent, 0);
+          const allocated = s.splits.reduce((t, p) => t + p.percent, 0);
           const room = 100 - allocated;
           if (room <= 0) return s;
           return {
-            partitions: s.partitions.map((p) =>
+            splits: s.splits.map((p) =>
               p.id === id ? { ...p, percent: p.percent + room } : p,
             ),
           };
@@ -481,9 +466,9 @@ export const useBudget = create<State & Actions>()(
           srcAmount: 3200,
           viewCurrency: null,
           currency: s.srcCurrency,
-          partitions: DEFAULT_PARTITIONS,
-          savedBaseline: slicesOf(DEFAULT_PARTITIONS),
-          activeSplitId: null,
+          splits: DEFAULT_SPLITS,
+          savedBaseline: splitsOf(DEFAULT_SPLITS),
+          activeBucketId: null,
         })),
 
       setTheme: (theme) => {
@@ -516,20 +501,38 @@ export const useBudget = create<State & Actions>()(
     }),
     {
       name: "bf-store",
-      version: 2,
-      // v1 stored savedBaseline as a signature string; v2 stores slices. Coerce
-      // any legacy value back into an array so the dirty/revert logic is safe.
+      version: 3,
+      // v1 stored savedBaseline as a signature string; v2 used the old
+      // partition/split vocabulary. Carry both onto the current shape so saved
+      // data survives the rename.
       migrate: (persisted) => {
         const p = persisted as Record<string, unknown> | undefined;
-        if (p && !Array.isArray(p.savedBaseline)) {
-          p.savedBaseline = Array.isArray(p.partitions)
-            ? (p.partitions as Partition[]).map((x) => ({
-                name: x.name,
-                percent: x.percent,
-                colorIndex: x.colorIndex,
-              }))
-            : [];
+        if (!p) return p as unknown as State & Actions;
+        // Old field names → new: partitions→splits, savedSplits→savedBuckets
+        // (each entry's slices→splits), activeSplitId→activeBucketId.
+        if (p.partitions && !p.splits) p.splits = p.partitions;
+        if (Array.isArray(p.savedSplits) && !p.savedBuckets) {
+          p.savedBuckets = (p.savedSplits as Record<string, unknown>[]).map((b) => ({
+            id: b.id,
+            name: b.name,
+            splits: b.splits ?? b.slices ?? [],
+          }));
         }
+        if (p.activeSplitId !== undefined && p.activeBucketId === undefined) {
+          p.activeBucketId = p.activeSplitId;
+        }
+        // v1 savedBaseline was a string signature — rebuild it from the splits.
+        if (!Array.isArray(p.savedBaseline)) {
+          const src = Array.isArray(p.splits) ? (p.splits as StoredSplit[]) : [];
+          p.savedBaseline = src.map((x) => ({
+            name: x.name,
+            percent: x.percent,
+            colorIndex: x.colorIndex,
+          }));
+        }
+        delete p.partitions;
+        delete p.savedSplits;
+        delete p.activeSplitId;
         return p as unknown as State & Actions;
       },
       partialize: (s) => ({
@@ -539,9 +542,9 @@ export const useBudget = create<State & Actions>()(
         srcCurrency: s.srcCurrency,
         viewCurrency: s.viewCurrency,
         currencyPinned: s.currencyPinned,
-        partitions: s.partitions,
-        savedSplits: s.savedSplits,
-        activeSplitId: s.activeSplitId,
+        splits: s.splits,
+        savedBuckets: s.savedBuckets,
+        activeBucketId: s.activeBucketId,
         savedBaseline: s.savedBaseline,
         libraryView: s.libraryView,
         theme: s.theme,
@@ -558,24 +561,24 @@ export const useBudget = create<State & Actions>()(
   ),
 );
 
-/* ---- Derived selectors (computed from partitions) ---- */
+/* ---- Derived selectors (computed from splits) ---- */
 
-export function selectAllocated(partitions: Partition[]): number {
-  return partitions.reduce((t, p) => t + p.percent, 0);
+export function selectAllocated(splits: Split[]): number {
+  return splits.reduce((t, p) => t + p.percent, 0);
 }
 
-/** True when the current split differs from the last saved/loaded one. */
+/** True when the current bucket differs from the last saved/loaded one. */
 export function selectIsDirty(s: {
-  partitions: Partition[];
-  savedBaseline: Slice[];
+  splits: Split[];
+  savedBaseline: StoredSplit[];
 }): boolean {
   const base = Array.isArray(s.savedBaseline) ? s.savedBaseline : [];
-  return splitSig(slicesOf(s.partitions)) !== splitSig(base);
+  return bucketSig(splitsOf(s.splits)) !== bucketSig(base);
 }
 
-export function selectUnallocated(partitions: Partition[]): number {
+export function selectUnallocated(splits: Split[]): number {
   // Swallow floating-point dust (e.g. 1e-13) so a fully-split bar reads as 0,
   // while a real remainder of any size is preserved.
-  const u = 100 - selectAllocated(partitions);
+  const u = 100 - selectAllocated(splits);
   return u <= 1e-9 ? 0 : u;
 }

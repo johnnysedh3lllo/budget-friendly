@@ -31,8 +31,8 @@ export const THEMES: { id: ThemeName; label: string; blurb: string }[] = [
   { id: "mocha", label: "Mocha", blurb: "Warm dark roast" },
 ];
 
-/** A single slice of the 100%. */
-export type Partition = {
+/** A single split of the 100% (one named portion, e.g. "Rent 10"). */
+export type Split = {
   id: string;
   name: string;
   /** Integer percent, 0–100. */
@@ -45,12 +45,12 @@ export type Template = {
   id: string;
   name: string;
   tagline: string;
-  slices: { name: string; percent: number }[];
+  splits: { name: string; percent: number }[];
 };
 
-/** A split the user saved to reuse — keeps each bucket's colour. */
-export type SavedSplit = {
+/** A bucket the user saved to reuse — a collection of splits, with colours. */
+export type SavedBucket = {
   id: string;
   name: string;
-  slices: { name: string; percent: number; colorIndex: number }[];
+  splits: { name: string; percent: number; colorIndex: number }[];
 };

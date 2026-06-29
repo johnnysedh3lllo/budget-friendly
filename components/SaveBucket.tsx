@@ -3,23 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useBudget, selectIsDirty } from "@/lib/store";
-import { partitionColor } from "@/lib/colors";
+import { splitColor } from "@/lib/colors";
 import { formatMoney, roundPercent } from "@/lib/format";
-import { MiniSplitBar } from "./SplitsLibrary";
+import { MiniBucketBar } from "./BucketsLibrary";
 
 // Icon-only "save" beside the split heading: a dot marks unsaved edits and a
-// green tick flashes after saving. When a saved split is loaded, Save updates
+// green tick flashes after saving. When a saved bucket is loaded, Save updates
 // it in place; otherwise it opens a modal to name a new entry. A Revert button
 // appears alongside while there are unsaved edits.
-export default function SaveSplit() {
-  const partitions = useBudget((s) => s.partitions);
+export default function SaveBucket() {
+  const splits = useBudget((s) => s.splits);
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
-  const saveSplit = useBudget((s) => s.saveSplit);
-  const updateSplit = useBudget((s) => s.updateSplit);
-  const revertSplit = useBudget((s) => s.revertSplit);
-  const activeSplitId = useBudget((s) => s.activeSplitId);
-  const savedSplits = useBudget((s) => s.savedSplits);
+  const saveBucket = useBudget((s) => s.saveBucket);
+  const updateBucket = useBudget((s) => s.updateBucket);
+  const revertBucket = useBudget((s) => s.revertBucket);
+  const activeBucketId = useBudget((s) => s.activeBucketId);
+  const savedBuckets = useBudget((s) => s.savedBuckets);
   const dirty = useBudget(selectIsDirty);
 
   const [open, setOpen] = useState(false);
@@ -27,9 +27,9 @@ export default function SaveSplit() {
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canSave = partitions.length > 0;
-  // The loaded saved split, if it still exists — Save updates it in place.
-  const active = savedSplits.find((s) => s.id === activeSplitId) ?? null;
+  const canSave = splits.length > 0;
+  // The loaded saved bucket, if it still exists — Save updates it in place.
+  const active = savedBuckets.find((s) => s.id === activeBucketId) ?? null;
 
   useEffect(() => {
     if (open) requestAnimationFrame(() => inputRef.current?.focus());
@@ -42,7 +42,7 @@ export default function SaveSplit() {
 
   function onSaveClick() {
     if (active) {
-      updateSplit(active.id);
+      updateBucket(active.id);
       flashSaved();
     } else {
       setOpen(true);
@@ -51,7 +51,7 @@ export default function SaveSplit() {
 
   function submit() {
     if (!name.trim()) return;
-    saveSplit(name);
+    saveBucket(name);
     setName("");
     setOpen(false);
     flashSaved();
@@ -64,12 +64,12 @@ export default function SaveSplit() {
         onClick={onSaveClick}
         disabled={!canSave}
         aria-label={
-          active ? `Update ${active.name}` : "Save as a new split"
+          active ? `Update ${active.name}` : "Save as a new bucket"
         }
         title={
           active
             ? `Update "${active.name}"${dirty ? " — unsaved changes" : ""}`
-            : "Save this split to your library"
+            : "Save this bucket to your library"
         }
         className="relative rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
       >
@@ -85,7 +85,7 @@ export default function SaveSplit() {
       {dirty && (
         <button
           type="button"
-          onClick={revertSplit}
+          onClick={revertBucket}
           aria-label="Revert unsaved changes"
           title={active ? `Revert to saved "${active.name}"` : "Revert changes"}
           className="rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
@@ -108,7 +108,7 @@ export default function SaveSplit() {
             <motion.div
               role="dialog"
               aria-modal="true"
-              aria-label="Save this split"
+              aria-label="Save this bucket"
               className="surface-raised relative z-10 flex w-full max-w-sm flex-col gap-4 p-4"
               style={{ borderRadius: "var(--radius-lg)" }}
               initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -125,7 +125,7 @@ export default function SaveSplit() {
             >
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-base font-semibold text-ink">
-                  Save this split
+                  Save this bucket
                 </h3>
                 <button
                   type="button"
@@ -139,14 +139,14 @@ export default function SaveSplit() {
 
               {/* Preview of what's being saved. */}
               <div className="surface flex flex-col gap-2.5 p-3">
-                <MiniSplitBar slices={partitions} />
+                <MiniBucketBar splits={splits} />
                 <ul className="flex flex-col gap-1.5">
-                  {partitions.map((p) => (
+                  {splits.map((p) => (
                     <li key={p.id} className="flex items-center gap-2 text-sm">
                       <span
                         aria-hidden
                         className="size-2.5 shrink-0 rounded-full"
-                        style={{ background: partitionColor(p.colorIndex) }}
+                        style={{ background: splitColor(p.colorIndex) }}
                       />
                       <span className="min-w-0 flex-1 truncate text-ink">
                         {p.name || "Untitled"}
@@ -167,8 +167,8 @@ export default function SaveSplit() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={40}
-                placeholder="Name this split — e.g. My paycheck"
-                aria-label="Split name"
+                placeholder="Name this bucket — e.g. My paycheck"
+                aria-label="Bucket name"
                 className="field w-full px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-subtle"
               />
 
@@ -186,7 +186,7 @@ export default function SaveSplit() {
                   disabled={!name.trim()}
                   className="btn btn-primary text-sm"
                 >
-                  Save split
+                  Save bucket
                 </button>
               </div>
             </motion.div>

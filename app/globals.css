@@ -518,7 +518,7 @@
 }
 
 /* ================================================================== *
- * THEME: mono — achromatic Swiss minimal, buckets read as a grey ramp
+ * THEME: mono — achromatic Swiss minimal, splits read as a grey ramp
  * ================================================================== */
 [data-theme="mono"] {
   color-scheme: light;
@@ -975,7 +975,7 @@
     background: color-mix(in oklch, var(--ink) 45%, transparent);
   }
 
-  /* Scroll-shadows: cue that there's more above / below the bucket list. */
+  /* Scroll-shadows: cue that there's more above / below the split list. */
   .bf-shadow-top,
   .bf-shadow-bottom {
     pointer-events: none;
@@ -1078,7 +1078,7 @@
     outline-offset: 2px;
   }
 
-  /* Range sliders adopt their partition colour via accent-color (set inline). */
+  /* Range sliders adopt their split colour via accent-color (set inline). */
   .bf-range {
     -webkit-appearance: none;
     appearance: none;

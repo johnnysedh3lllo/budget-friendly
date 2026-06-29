@@ -5,11 +5,11 @@ import {
   useBudget,
   selectUnallocated,
   selectAllocated,
-  parseBucketText,
+  parseSplitText,
 } from "@/lib/store";
-import { partitionColor, PALETTE_SIZE } from "@/lib/colors";
+import { splitColor, PALETTE_SIZE } from "@/lib/colors";
 import { formatPercent, roundPercent, currencyOf } from "@/lib/format";
-import SaveSplit from "./SaveSplit";
+import SaveBucket from "./SaveBucket";
 
 /** Pick the label ink per palette colour from its OKLCH lightness. */
 function usePaletteInk(): string[] {
@@ -39,10 +39,10 @@ function usePaletteInk(): string[] {
 }
 
 export default function BucketBar() {
-  const partitions = useBudget((s) => s.partitions);
+  const splits = useBudget((s) => s.splits);
   const setPercent = useBudget((s) => s.setPercent);
   const adjustPair = useBudget((s) => s.adjustPair);
-  const addPartition = useBudget((s) => s.addPartition);
+  const addSplit = useBudget((s) => s.addSplit);
   const lastAddedId = useBudget((s) => s.lastAddedId);
   const clearLastAdded = useBudget((s) => s.clearLastAdded);
   const selectedId = useBudget((s) => s.selectedId);
@@ -54,18 +54,18 @@ export default function BucketBar() {
   // Which knob is actively held — keeps its grip enlarged for the whole drag.
   const [activeKnob, setActiveKnob] = useState<number | null>(null);
 
-  const unallocated = selectUnallocated(partitions);
-  const allocated = selectAllocated(partitions);
+  const unallocated = selectUnallocated(splits);
+  const allocated = selectAllocated(splits);
 
-  // Drop the selection if its bucket no longer exists (e.g. after a template).
+  // Drop the selection if its split no longer exists (e.g. after a template).
   useEffect(() => {
-    if (selectedId && !partitions.some((p) => p.id === selectedId)) {
+    if (selectedId && !splits.some((p) => p.id === selectedId)) {
       setSelected(null);
     }
-  }, [partitions, selectedId, setSelected]);
+  }, [splits, selectedId, setSelected]);
 
   let acc = 0;
-  const segs = partitions.map((p) => {
+  const segs = splits.map((p) => {
     const start = acc;
     acc += p.percent;
     return { ...p, start, end: acc };
@@ -87,16 +87,16 @@ export default function BucketBar() {
   function onHandleMove(e: React.PointerEvent) {
     const index = draggingRef.current;
     if (index == null) return;
-    const start = partitions
+    const start = splits
       .slice(0, index)
       .reduce((t, p) => t + p.percent, 0);
     const target = pctFromEvent(e.clientX) - start;
-    if (index < partitions.length - 1) {
-      // boundary between two buckets → trade between them
+    if (index < splits.length - 1) {
+      // boundary between two splits → trade between them
       adjustPair(index, target);
     } else {
-      // last bucket's edge → grow/shrink into the unallocated space
-      setPercent(partitions[index].id, target);
+      // last split's edge → grow/shrink into the unallocated space
+      setPercent(splits[index].id, target);
     }
   }
   function onHandleUp(e: React.PointerEvent) {
@@ -107,7 +107,7 @@ export default function BucketBar() {
     } catch {}
   }
   function onHandleKey(e: React.KeyboardEvent, index: number) {
-    const p = partitions[index];
+    const p = splits[index];
     // Shift = coarse (5), Alt = fine (0.1), otherwise 1.
     const step = e.shiftKey ? 5 : e.altKey ? 0.1 : 1;
     let dir = 0;
@@ -115,7 +115,7 @@ export default function BucketBar() {
     else if (e.key === "ArrowLeft" || e.key === "ArrowDown") dir = -1;
     if (!dir) return;
     e.preventDefault();
-    if (index < partitions.length - 1) {
+    if (index < splits.length - 1) {
       adjustPair(index, p.percent + dir * step);
     } else {
       setPercent(p.id, p.percent + dir * step);
@@ -127,9 +127,9 @@ export default function BucketBar() {
   return (
     <div className="flex flex-col gap-3">
       {/* Editor form on top */}
-      <BucketForm
+      <SplitForm
         selectedId={selectedId}
-        onAdd={addPartition}
+        onAdd={addSplit}
         autoFocus={lastAddedId != null && lastAddedId === selectedId}
         onAutoFocused={clearLastAdded}
       />
@@ -141,7 +141,7 @@ export default function BucketBar() {
           <span className="text-sm font-semibold text-ink-muted">
             How your 100% is split
           </span>
-          <SaveSplit />
+          <SaveBucket />
         </div>
         <span className="num text-sm font-semibold text-ink-muted">
           {roundPercent(allocated)}
@@ -169,11 +169,11 @@ export default function BucketBar() {
             <button
               key={p.id}
               onClick={() => setSelected(p.id)}
-              aria-label={`Edit ${p.name || "bucket"}, ${formatPercent(p.percent)}`}
+              aria-label={`Edit ${p.name || "split"}, ${formatPercent(p.percent)}`}
               className="flex h-full min-w-0 items-center overflow-hidden text-left"
               style={{
                 width: `${p.percent}%`,
-                background: partitionColor(p.colorIndex),
+                background: splitColor(p.colorIndex),
                 transition: dragging ? "none" : "width 160ms var(--ease)",
                 outline:
                   selectedId === p.id ? "2px solid var(--ink)" : "none",
@@ -200,9 +200,9 @@ export default function BucketBar() {
           {unallocated > 0 && (
             <button
               type="button"
-              onClick={() => addPartition()}
-              aria-label="Add a bucket using the unallocated space"
-              title="Add a bucket"
+              onClick={() => addSplit()}
+              aria-label="Add a split using the unallocated space"
+              title="Add a split"
               className="bf-hatch group flex h-full cursor-pointer items-center justify-center hover:brightness-95"
               style={{
                 width: `${unallocated}%`,
@@ -213,13 +213,13 @@ export default function BucketBar() {
                 borderBottomLeftRadius: segs.length === 0 ? "var(--radius-md)" : 0,
               }}
             >
-              {partitions.length === 0 ? (
+              {splits.length === 0 ? (
                 <span className="px-2 text-center text-xs font-semibold text-ink-muted">
-                  No buckets yet — tap to add one
+                  No splits yet — tap to add one
                 </span>
               ) : unallocated >= 12 ? (
                 <span className="num truncate px-2 text-xs font-bold text-ink-muted">
-                  + Add bucket
+                  + Add split
                 </span>
               ) : unallocated >= 5 ? (
                 <span className="text-sm font-bold text-ink-muted">+</span>
@@ -230,14 +230,14 @@ export default function BucketBar() {
 
         {/* Knobs: a thin full-height divider sitting on each boundary seam, so
             it reads as part of the bar (not a floating pill) and stays compact
-            even when buckets are small. Each resizes the bucket on its left. */}
+            even when splits are small. Each resizes the split on its left. */}
         <div className="pointer-events-none absolute inset-0">
           {segs.map((p, i) => (
             <div
               key={p.id}
               role="slider"
               tabIndex={0}
-              aria-label={`Resize ${p.name || "bucket"}`}
+              aria-label={`Resize ${p.name || "split"}`}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={roundPercent(p.percent)}
@@ -261,7 +261,7 @@ export default function BucketBar() {
   );
 }
 
-function BucketForm({
+function SplitForm({
   selectedId,
   onAdd,
   autoFocus,
@@ -272,30 +272,30 @@ function BucketForm({
   autoFocus: boolean;
   onAutoFocused: () => void;
 }) {
-  const partitions = useBudget((s) => s.partitions);
+  const splits = useBudget((s) => s.splits);
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
-  const renamePartition = useBudget((s) => s.renamePartition);
-  const recolorPartition = useBudget((s) => s.recolorPartition);
-  const removePartition = useBudget((s) => s.removePartition);
+  const renameSplit = useBudget((s) => s.renameSplit);
+  const recolorSplit = useBudget((s) => s.recolorSplit);
+  const removeSplit = useBudget((s) => s.removeSplit);
   const setPercent = useBudget((s) => s.setPercent);
-  const setPartitionAmount = useBudget((s) => s.setPartitionAmount);
-  const addFromText = useBudget((s) => s.addPartitionsFromText);
+  const setSplitAmount = useBudget((s) => s.setSplitAmount);
+  const addFromText = useBudget((s) => s.addSplitsFromText);
   const setSelected = useBudget((s) => s.setSelected);
   const nameRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLInputElement>(null);
 
-  // "single" edits/adds one bucket; "list" pastes several as text at once.
+  // "single" edits/adds one split; "list" pastes several as text at once.
   const [mode, setMode] = useState<"single" | "list">("single");
   const [text, setText] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const isList = mode === "list";
 
-  const p = partitions.find((x) => x.id === selectedId) ?? null;
-  // The edit controls below apply to a single selected bucket only.
+  const p = splits.find((x) => x.id === selectedId) ?? null;
+  // The edit controls below apply to a single selected split only.
   const disabled = !p || isList;
-  // No room left → can't carve out a new bucket.
-  const full = selectUnallocated(partitions) <= 0;
+  // No room left → can't carve out a new split.
+  const full = selectUnallocated(splits) <= 0;
 
   useEffect(() => {
     if (autoFocus && p && nameRef.current) {
@@ -305,7 +305,7 @@ function BucketForm({
     }
   }, [autoFocus, p, onAutoFocused]);
 
-  const sliceAmount = p ? amount * (p.percent / 100) : 0;
+  const splitAmount = p ? amount * (p.percent / 100) : 0;
 
   function enterListMode() {
     setSelected(null); // so the edit row below disables, as when nothing's picked
@@ -315,14 +315,14 @@ function BucketForm({
   }
 
   function submitList() {
-    const parsed = parseBucketText(text);
+    const parsed = parseSplitText(text);
     if (parsed.length === 0) return;
-    const room = selectUnallocated(partitions);
+    const room = selectUnallocated(splits);
     const requested = parsed.reduce((t, x) => t + x.percent, 0);
     addFromText(text);
     setText("");
     const count = parsed.length;
-    const noun = count === 1 ? "bucket" : "buckets";
+    const noun = count === 1 ? "split" : "splits";
     setNote(
       requested > room
         ? `Added ${count} ${noun} — trimmed to fit the ${room}% you had left.`
@@ -346,7 +346,7 @@ function BucketForm({
               }
             }}
             placeholder="Name then %, comma-separated — e.g. Rent 35, School 20"
-            aria-label="Add several buckets from a list"
+            aria-label="Add several splits from a list"
             className="min-h-6 min-w-[9rem] flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-subtle"
           />
         ) : p ? (
@@ -354,20 +354,20 @@ function BucketForm({
             <span
               aria-hidden
               className="size-4 shrink-0 rounded-full"
-              style={{ background: partitionColor(p.colorIndex) }}
+              style={{ background: splitColor(p.colorIndex) }}
             />
             <input
               ref={nameRef}
               value={p.name}
-              onChange={(e) => renamePartition(p.id, e.target.value)}
-              placeholder="Name this bucket"
+              onChange={(e) => renameSplit(p.id, e.target.value)}
+              placeholder="Name this split"
               maxLength={28}
               className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
             />
           </div>
         ) : (
           <span className="flex min-h-6 min-w-[9rem] flex-1 items-center text-base text-ink-subtle">
-            Click a block on the bar to edit it — or add a new bucket.
+            Click a block on the bar to edit it — or add a new split.
           </span>
         )}
 
@@ -376,7 +376,7 @@ function BucketForm({
           onClick={() => (isList ? setMode("single") : enterListMode())}
           aria-pressed={isList}
           title={
-            isList ? "Back to adding one bucket" : "Add several buckets from a list"
+            isList ? "Back to adding one split" : "Add several splits from a list"
           }
           className="btn btn-ghost shrink-0 gap-1.5 text-sm"
           style={
@@ -396,11 +396,11 @@ function BucketForm({
           onClick={isList ? submitList : onAdd}
           disabled={full || (isList && !text.trim())}
           title={
-            full ? "You've allocated 100% — lower a bucket to make room" : undefined
+            full ? "You've allocated 100% — lower a split to make room" : undefined
           }
           className="btn btn-primary w-full shrink-0 text-sm sm:w-auto"
         >
-          {isList ? "+ Add buckets" : "+ Add bucket"}
+          {isList ? "+ Add splits" : "+ Add split"}
         </button>
       </div>
 
@@ -412,10 +412,10 @@ function BucketForm({
               aria-label={`Colour ${i + 1}`}
               aria-pressed={p ? i === p.colorIndex : false}
               disabled={disabled}
-              onClick={() => p && recolorPartition(p.id, i)}
+              onClick={() => p && recolorSplit(p.id, i)}
               className="size-6 rounded-full disabled:cursor-not-allowed disabled:opacity-40"
               style={{
-                background: partitionColor(i),
+                background: splitColor(i),
                 outline:
                   p && i === p.colorIndex
                     ? "2px solid var(--ink)"
@@ -427,11 +427,11 @@ function BucketForm({
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <BucketAmountField
-            value={sliceAmount}
+          <SplitAmountField
+            value={splitAmount}
             currency={currency}
             disabled={disabled || amount <= 0}
-            onChange={(v) => p && setPartitionAmount(p.id, v)}
+            onChange={(v) => p && setSplitAmount(p.id, v)}
           />
           <PercentField
             percent={p ? p.percent : null}
@@ -440,11 +440,11 @@ function BucketForm({
           />
           <span className="num text-sm text-ink-muted">%</span>
           <button
-            onClick={() => p && removePartition(p.id)}
+            onClick={() => p && removeSplit(p.id)}
             disabled={disabled}
-            aria-label={p ? `Remove ${p.name}` : "Remove bucket"}
+            aria-label={p ? `Remove ${p.name}` : "Remove split"}
             className="btn btn-ghost !px-2 !py-2"
-            title="Remove bucket"
+            title="Remove split"
           >
             <TrashIcon />
           </button>
@@ -498,10 +498,10 @@ function PercentField({
   );
 }
 
-// Editable currency figure for a bucket — type "50000" and the percent is
+// Editable currency figure for a split — type "50000" and the percent is
 // back-derived so the amount lands exactly. Same focus/draft trick as above so
 // the recomputed value doesn't overwrite what's being typed.
-function BucketAmountField({
+function SplitAmountField({
   value,
   currency,
   disabled,
@@ -543,7 +543,7 @@ function BucketAmountField({
           const v = parseFloat(raw);
           onChange(Number.isNaN(v) ? 0 : v);
         }}
-        aria-label="Amount for this bucket"
+        aria-label="Amount for this split"
         className="num w-full min-w-0 bg-transparent text-right text-sm font-semibold text-ink outline-none disabled:opacity-50"
       />
     </div>

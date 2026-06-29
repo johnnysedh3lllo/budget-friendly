@@ -1,7 +1,7 @@
 # Budget Friendly
 
 A flexible **percentage budget calculator**. Start at 100%, carve it into the
-buckets that fit *your* life — down to a single percent — and watch the real
+splits that fit *your* life — down to a single percent — and watch the real
 amounts land. The classic rules (50/30/20, 60/20/20, …) are just starting
 templates, not constraints.
 
@@ -9,11 +9,11 @@ templates, not constraints.
 
 ## Features
 
-- **Drag-to-split bar** — buckets are segments of one bar; drag a divider to
+- **Drag-to-split bar** — splits are segments of one bar; drag a divider to
   trade percent between two neighbours, or grow the last one into the
   unallocated space.
-- **Name, recolor, delete** any bucket; add by text (`Rent 35, Food 15, Fun 5`).
-- **Live breakdown** — donut + per-bucket amounts for any input amount and
+- **Name, recolor, delete** any split; add by text (`Rent 35, Food 15, Fun 5`).
+- **Live breakdown** — donut + per-split amounts for any input amount and
   currency.
 - **14 fully-tokenized themes** — light (Candy, Pastel, Sunset, Fintech, Forest,
   Retro, Mono, **Neo Brutalism** — the default) and dark (Midnight, Noir,

@@ -6,7 +6,7 @@ import { useBudget, selectUnallocated } from "@/lib/store";
 import { formatMoney, roundPercent } from "@/lib/format";
 import AmountInput from "./AmountInput";
 import BucketBar from "./BucketBar";
-import SplitsLibrary from "./SplitsLibrary";
+import BucketsLibrary from "./BucketsLibrary";
 import StartFromRule from "./StartFromRule";
 import Summary from "./Summary";
 
@@ -14,12 +14,12 @@ export default function Calculator() {
   const hasHydrated = useBudget((s) => s.hasHydrated);
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
-  const partitions = useBudget((s) => s.partitions);
+  const splits = useBudget((s) => s.splits);
   const distributeEvenly = useBudget((s) => s.distributeEvenly);
-  const clearPartitions = useBudget((s) => s.clearPartitions);
+  const clearSplits = useBudget((s) => s.clearSplits);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const unallocated = selectUnallocated(partitions);
+  const unallocated = selectUnallocated(splits);
   const allocated = 100 - unallocated;
 
   if (!hasHydrated) {
@@ -49,15 +49,15 @@ export default function Calculator() {
                   style={{ background: "var(--border)" }}
                 />
                 <button
-                  onClick={clearPartitions}
-                  disabled={partitions.length === 0}
+                  onClick={clearSplits}
+                  disabled={splits.length === 0}
                   className="btn btn-ghost text-sm"
                 >
                   Clear
                 </button>
                 <button
                   onClick={distributeEvenly}
-                  disabled={partitions.length === 0}
+                  disabled={splits.length === 0}
                   className="btn btn-ghost text-sm"
                 >
                   Even split
@@ -68,7 +68,7 @@ export default function Calculator() {
             <BucketBar />
           </div>
 
-          <SplitsLibrary />
+          <BucketsLibrary />
 
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 pt-1">
             <span className="text-xs text-ink-subtle">

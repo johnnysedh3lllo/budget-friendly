@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useBudget } from "@/lib/store";
 import { TEMPLATES } from "@/lib/templates";
 import type { Template } from "@/lib/types";
-import { MiniSplitBar } from "./SplitsLibrary";
+import { MiniBucketBar } from "./BucketsLibrary";
 
 // "Start from rule" — a button (beside Clear / Even split) that opens a modal of
 // the built-in starting rules with a search box. The list shows ~5 at a time and
@@ -27,7 +27,7 @@ export default function StartFromRule() {
     const q = query.trim().toLowerCase();
     if (!q) return TEMPLATES;
     return TEMPLATES.filter((t) => {
-      const hay = `${t.name} ${t.tagline} ${t.slices
+      const hay = `${t.name} ${t.tagline} ${t.splits
         .map((s) => s.name)
         .join(" ")}`.toLowerCase();
       return hay.includes(q);
@@ -120,11 +120,11 @@ export default function StartFromRule() {
                             {t.name}
                           </span>
                           <span className="shrink-0 text-xs text-ink-subtle">
-                            {t.slices.length} buckets
+                            {t.splits.length} splits
                           </span>
                         </span>
-                        <MiniSplitBar
-                          slices={t.slices.map((s, i) => ({
+                        <MiniBucketBar
+                          splits={t.splits.map((s, i) => ({
                             percent: s.percent,
                             colorIndex: i % 8,
                           }))}

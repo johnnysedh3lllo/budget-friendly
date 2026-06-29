@@ -2,56 +2,56 @@
 
 import { useState } from "react";
 import { useBudget } from "@/lib/store";
-import { partitionColor } from "@/lib/colors";
+import { splitColor } from "@/lib/colors";
 import { roundPercent } from "@/lib/format";
-import type { SavedSplit } from "@/lib/types";
+import type { SavedBucket } from "@/lib/types";
 
-/** Render slices as the multi-bucket paste text: "Savings 30, Rent 10". */
-export function slicesToText(slices: { name: string; percent: number }[]): string {
-  return slices
-    .map((s) => `${s.name || "Bucket"} ${roundPercent(s.percent)}`)
+/** Render a bucket's splits as the multi-split paste text: "Savings 30, Rent 10". */
+export function splitsToText(splits: { name: string; percent: number }[]): string {
+  return splits
+    .map((s) => `${s.name || "Split"} ${roundPercent(s.percent)}`)
     .join(", ");
 }
 
-/** A thin stacked colour bar previewing a split (percent out of 100). */
-export function MiniSplitBar({
-  slices,
+/** A thin stacked colour bar previewing a bucket's splits (percent out of 100). */
+export function MiniBucketBar({
+  splits,
 }: {
-  slices: { percent: number; colorIndex: number }[];
+  splits: { percent: number; colorIndex: number }[];
 }) {
   return (
     <div
       className="flex h-1.5 w-full overflow-hidden"
       style={{ borderRadius: "var(--radius-pill)", background: "var(--surface-2)" }}
     >
-      {slices.map((s, i) => (
+      {splits.map((s, i) => (
         <div
           key={i}
-          style={{ width: `${s.percent}%`, background: partitionColor(s.colorIndex) }}
+          style={{ width: `${s.percent}%`, background: splitColor(s.colorIndex) }}
         />
       ))}
     </div>
   );
 }
 
-// The library of the user's saved splits (newest first). Borderless rows with
+// The library of the user's saved buckets (newest first). Borderless rows with
 // hover affordances (like the summary list): click a row to load it, with copy
 // and delete actions. A persisted list/grid switch and an internal scroll let
 // it hold many entries while filling the space under the split bar.
-export default function SplitsLibrary() {
-  const savedSplits = useBudget((s) => s.savedSplits);
+export default function BucketsLibrary() {
+  const savedBuckets = useBudget((s) => s.savedBuckets);
   const view = useBudget((s) => s.libraryView);
   const setView = useBudget((s) => s.setLibraryView);
-  const applySavedSplit = useBudget((s) => s.applySavedSplit);
-  const deleteSplit = useBudget((s) => s.deleteSplit);
+  const applySavedBucket = useBudget((s) => s.applySavedBucket);
+  const deleteBucket = useBudget((s) => s.deleteBucket);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  function onCopy(split: SavedSplit) {
+  function onCopy(bucket: SavedBucket) {
     navigator.clipboard
-      ?.writeText(slicesToText(split.slices))
+      ?.writeText(splitsToText(bucket.splits))
       .then(() => {
-        setCopiedId(split.id);
-        setTimeout(() => setCopiedId((c) => (c === split.id ? null : c)), 1200);
+        setCopiedId(bucket.id);
+        setTimeout(() => setCopiedId((c) => (c === bucket.id ? null : c)), 1200);
       })
       .catch(() => {});
   }
@@ -60,20 +60,20 @@ export default function SplitsLibrary() {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
         <h2 className="text-lg">Library</h2>
-        {savedSplits.length > 0 && (
+        {savedBuckets.length > 0 && (
           <ViewSwitch view={view} onChange={setView} />
         )}
       </div>
 
       <div className="surface bf-scroll min-h-[7rem] flex-1 overflow-y-auto p-1.5">
-        {savedSplits.length === 0 ? (
+        {savedBuckets.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 py-8 text-center">
             <BookmarkIcon />
             <p className="text-sm font-semibold text-ink-muted">
-              No saved splits yet
+              No saved buckets yet
             </p>
             <p className="max-w-[22rem] text-xs text-ink-subtle">
-              Build a split, then hit{" "}
+              Build a bucket, then hit{" "}
               <span className="font-semibold text-ink-muted">Save</span> to keep
               it here — or{" "}
               <span className="font-semibold text-ink-muted">
@@ -90,41 +90,41 @@ export default function SplitsLibrary() {
                 : "flex flex-col gap-0.5"
             }
           >
-            {savedSplits.map((split) => (
-              <li key={split.id} className="group">
+            {savedBuckets.map((bucket) => (
+              <li key={bucket.id} className="group">
                 <div className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2">
                   <button
                     type="button"
-                    onClick={() => applySavedSplit(split)}
-                    aria-label={`Load ${split.name} into the editor`}
+                    onClick={() => applySavedBucket(bucket)}
+                    aria-label={`Load ${bucket.name} into the editor`}
                     className="flex min-w-0 flex-1 flex-col gap-1 text-left"
                   >
                     <span className="truncate font-semibold text-ink">
-                      {split.name}
+                      {bucket.name}
                     </span>
                     <span className="truncate text-xs text-ink-subtle">
-                      {slicesToText(split.slices)}
+                      {splitsToText(bucket.splits)}
                     </span>
                   </button>
 
                   <div className="hidden w-20 shrink-0 sm:block">
-                    <MiniSplitBar slices={split.slices} />
+                    <MiniBucketBar splits={bucket.splits} />
                   </div>
 
                   <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
                     <IconButton
                       label={
-                        copiedId === split.id
-                          ? `${split.name} copied`
-                          : `Copy ${split.name} as text`
+                        copiedId === bucket.id
+                          ? `${bucket.name} copied`
+                          : `Copy ${bucket.name} as text`
                       }
-                      onClick={() => onCopy(split)}
+                      onClick={() => onCopy(bucket)}
                     >
-                      {copiedId === split.id ? <CheckIcon /> : <CopyIcon />}
+                      {copiedId === bucket.id ? <CheckIcon /> : <CopyIcon />}
                     </IconButton>
                     <IconButton
-                      label={`Delete ${split.name}`}
-                      onClick={() => deleteSplit(split.id)}
+                      label={`Delete ${bucket.name}`}
+                      onClick={() => deleteBucket(bucket.id)}
                       danger
                     >
                       <TrashIcon />

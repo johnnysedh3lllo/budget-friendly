@@ -9,7 +9,7 @@ export const TEMPLATES: Template[] = [
     id: "50-30-20",
     name: "50 / 30 / 20",
     tagline: "The classic starting split",
-    slices: [
+    splits: [
       { name: "Needs", percent: 50 },
       { name: "Wants", percent: 30 },
       { name: "Savings", percent: 20 },
@@ -19,7 +19,7 @@ export const TEMPLATES: Template[] = [
     id: "60-20-20",
     name: "60 / 20 / 20",
     tagline: "When the essentials run higher",
-    slices: [
+    splits: [
       { name: "Needs", percent: 60 },
       { name: "Wants", percent: 20 },
       { name: "Savings", percent: 20 },
@@ -29,7 +29,7 @@ export const TEMPLATES: Template[] = [
     id: "50-40-10",
     name: "50 / 40 / 10",
     tagline: "More room to enjoy life",
-    slices: [
+    splits: [
       { name: "Essentials", percent: 50 },
       { name: "Lifestyle", percent: 40 },
       { name: "Savings", percent: 10 },
@@ -39,7 +39,7 @@ export const TEMPLATES: Template[] = [
     id: "70-20-10",
     name: "70 / 20 / 10",
     tagline: "Pay down debt, keep saving",
-    slices: [
+    splits: [
       { name: "Living", percent: 70 },
       { name: "Savings", percent: 20 },
       { name: "Debt", percent: 10 },
@@ -48,8 +48,8 @@ export const TEMPLATES: Template[] = [
   {
     id: "balanced-life",
     name: "Balanced life",
-    tagline: "Five buckets for a fuller picture",
-    slices: [
+    tagline: "Five splits for a fuller picture",
+    splits: [
       { name: "Needs", percent: 45 },
       { name: "Wants", percent: 20 },
       { name: "Savings", percent: 15 },
@@ -61,6 +61,6 @@ export const TEMPLATES: Template[] = [
     id: "blank",
     name: "Start blank",
     tagline: "Build it all yourself",
-    slices: [{ name: "First bucket", percent: 10 }],
+    splits: [{ name: "First split", percent: 10 }],
   },
 ];

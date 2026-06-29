@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Budget Friendly — split any amount, your way",
     short_name: "Budget Friendly",
     description:
-      "A flexible percentage budget calculator. Start at 100%, carve it into your own named buckets, and see the real amounts.",
+      "A flexible percentage budget calculator. Start at 100%, carve it into your own named splits, and see the real amounts.",
     start_url: "/",
     scope: "/",
     display: "standalone",

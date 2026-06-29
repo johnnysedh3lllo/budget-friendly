@@ -42,7 +42,7 @@ const siteUrl =
     : "http://localhost:3000");
 
 const description =
-  "A flexible percentage budget calculator. Start at 100%, carve it into your own named buckets, and see the real amounts. The 50/30/20 rule is just a starting point.";
+  "A flexible percentage budget calculator. Start at 100%, carve it into your own named splits, and see the real amounts. The 50/30/20 rule is just a starting point.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

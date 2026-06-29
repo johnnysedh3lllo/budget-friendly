@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "Budget Friendly — split any amount into your own named buckets";
+  "Budget Friendly — split any amount into your own named splits";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -48,7 +48,7 @@ export default function Image() {
             Split any amount — your way.
           </div>
           <div style={{ display: "flex", fontSize: "34px", color: "#3a3a3a", maxWidth: "880px" }}>
-            Carve 100% into the buckets that fit your life. The 50/30/20 rule is a starting line, not a cage.
+            Carve 100% into the splits that fit your life. The 50/30/20 rule is a starting line, not a cage.
           </div>
         </div>
 
