@@ -44,6 +44,7 @@ export default function BucketsLibrary() {
   const setView = useBudget((s) => s.setLibraryView);
   const applySavedBucket = useBudget((s) => s.applySavedBucket);
   const deleteBucket = useBudget((s) => s.deleteBucket);
+  const activeBucketId = useBudget((s) => s.activeBucketId);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   function onCopy(bucket: SavedBucket) {
@@ -92,7 +93,10 @@ export default function BucketsLibrary() {
           >
             {savedBuckets.map((bucket) => (
               <li key={bucket.id} className="group">
-                <div className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2">
+                <div
+                  data-active={bucket.id === activeBucketId}
+                  className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2 data-[active=true]:bg-surface-2 data-[active=true]:ring-1 data-[active=true]:ring-inset data-[active=true]:ring-[var(--primary)]"
+                >
                   <button
                     type="button"
                     onClick={() => applySavedBucket(bucket)}

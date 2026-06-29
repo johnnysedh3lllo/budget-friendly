@@ -47,6 +47,8 @@ export default function BucketBar() {
   const clearLastAdded = useBudget((s) => s.clearLastAdded);
   const selectedId = useBudget((s) => s.selectedId);
   const setSelected = useBudget((s) => s.setSelected);
+  const activeBucketId = useBudget((s) => s.activeBucketId);
+  const savedBuckets = useBudget((s) => s.savedBuckets);
 
   const inks = usePaletteInk();
   const barRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,9 @@ export default function BucketBar() {
 
   const unallocated = selectUnallocated(splits);
   const allocated = selectAllocated(splits);
+  // The saved bucket currently loaded (if any) — shown so the user knows what
+  // they're editing and won't overwrite it by surprise.
+  const activeBucket = savedBuckets.find((b) => b.id === activeBucketId) ?? null;
 
   // Drop the selection if its split no longer exists (e.g. after a template).
   useEffect(() => {
@@ -137,10 +142,23 @@ export default function BucketBar() {
       {/* The split bar below */}
       <div>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-ink-muted">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 text-sm font-semibold text-ink-muted">
             How your 100% is split
           </span>
+          {activeBucket && (
+            <span
+              className="flex min-w-0 items-center gap-1.5"
+              title={`Editing saved bucket "${activeBucket.name}" — Save updates it`}
+            >
+              <span aria-hidden className="text-ink-subtle">
+                ·
+              </span>
+              <span className="truncate text-sm font-semibold text-ink">
+                {activeBucket.name}
+              </span>
+            </span>
+          )}
           <SaveBucket />
         </div>
         <span className="num text-sm font-semibold text-ink-muted">
@@ -375,10 +393,13 @@ function SplitForm({
           type="button"
           onClick={() => (isList ? setMode("single") : enterListMode())}
           aria-pressed={isList}
-          title={
-            isList ? "Back to adding one split" : "Add several splits from a list"
+          aria-label={
+            isList ? "Back to adding one split" : "Add several splits at once"
           }
-          className="btn btn-ghost shrink-0 gap-1.5 text-sm"
+          title={
+            isList ? "Back to adding one split" : "Add several splits at once"
+          }
+          className="btn btn-ghost shrink-0 !px-2 !py-2"
           style={
             isList
               ? {
@@ -388,8 +409,7 @@ function SplitForm({
               : undefined
           }
         >
-          <ListIcon />
-          List
+          <MultiAddIcon />
         </button>
 
         <button
@@ -550,7 +570,8 @@ function SplitAmountField({
   );
 }
 
-function ListIcon() {
+// Rows + a plus — "type several splits at once" (single → multiple input).
+function MultiAddIcon() {
   return (
     <svg
       width="16"
@@ -563,7 +584,8 @@ function ListIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+      <path d="M3 6h13M3 12h13M3 18h7" />
+      <path d="M17 14v6M14 17h6" />
     </svg>
   );
 }
