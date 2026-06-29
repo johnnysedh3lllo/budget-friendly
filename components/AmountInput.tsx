@@ -46,6 +46,16 @@ export default function AmountInput() {
   const symbol = currencyOf(currency).symbol;
   const ratesDate = formatRatesDate(date);
 
+  // Exchange rate for 1 unit of the source in the view currency (e.g. NGN/USD).
+  const rate =
+    viewCurrency &&
+    table.rates[viewCurrency] != null &&
+    table.rates[srcCurrency] != null &&
+    table.rates[srcCurrency] !== 0
+      ? table.rates[viewCurrency] / table.rates[srcCurrency]
+      : null;
+  const rateText = rate != null ? formatRate(rate) : null;
+
   // While focused, show the raw editable number; otherwise show grouping.
   const display = focused
     ? amount === 0
@@ -134,27 +144,31 @@ export default function AmountInput() {
         />
       </div>
       <p className="mt-1.5 text-xs text-ink-subtle">
-        {viewCurrency ? (
+        {viewCurrency && rateText ? (
           <>
-            Showing {srcAmount.toLocaleString(undefined, {
-              maximumFractionDigits: 2,
-            })}{" "}
-            {srcCurrency} converted to {viewCurrency} — pick another on the right
-            to compare.
+            Showing{" "}
+            {srcAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
+            {srcCurrency} converted to {viewCurrency} at {rateText} {viewCurrency}/
+            {srcCurrency}.
+            {ratesDate && (
+              <>
+                {" "}
+                Rates {offline ? "saved" : "as of"} {ratesDate}
+                {offline ? " · offline" : ""}.
+              </>
+            )}
           </>
         ) : (
           <>
             Pick a second currency on the right to view this {sourceLabel} value
             converted.
-          </>
-        )}
-        {ratesDate && (
-          <>
-            {" "}
-            <span className="text-ink-subtle/80">
-              Rates {offline ? "saved" : "as of"} {ratesDate}
-              {offline ? " · offline" : ""}.
-            </span>
+            {ratesDate && (
+              <span className="text-ink-subtle/80">
+                {" "}
+                Rates {offline ? "saved" : "as of"} {ratesDate}
+                {offline ? " · offline" : ""}.
+              </span>
+            )}
           </>
         )}
       </p>
@@ -162,13 +176,18 @@ export default function AmountInput() {
   );
 }
 
-/** "2026-06-28" → "28 Jun 2026"; empty string if unparseable. */
+/** "2026-06-28" → "Jun 28, 2026"; empty string if unparseable. */
 function formatRatesDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, {
-    day: "numeric",
+  return d.toLocaleDateString("en-US", {
     month: "short",
+    day: "numeric",
     year: "numeric",
   });
+}
+
+/** Exchange rate to a readable string: ≥1 keeps 2dp (1379.10), else 4 sig figs. */
+function formatRate(rate: number): string {
+  return rate >= 1 ? rate.toFixed(2) : Number(rate.toPrecision(4)).toString();
 }
