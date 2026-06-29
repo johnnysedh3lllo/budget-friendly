@@ -39,7 +39,8 @@ export function parseBucketText(text: string): ParsedBucket[] {
       const m = seg.match(/^(.*?)[\s:=-]*?(\d+(?:\.\d+)?)\s*%?$/);
       if (m) {
         const name = m[1].trim() || "Bucket";
-        return { name, percent: Math.round(Math.abs(Number(m[2]))) };
+        // Keep decimals — "Rent 12.5" is a valid 12.5% bucket.
+        return { name, percent: Math.abs(Number(m[2])) };
       }
       return { name: seg, percent: 0 };
     });
@@ -122,6 +123,7 @@ type Actions = {
   removePartition: (id: string) => void;
   renamePartition: (id: string, name: string) => void;
   setPercent: (id: string, percent: number) => void;
+  setPartitionAmount: (id: string, value: number) => void;
   adjustPair: (index: number, leftPercent: number) => void;
   recolorPartition: (id: string, colorIndex: number) => void;
   clearPartitions: () => void;
@@ -223,17 +225,37 @@ export const useBudget = create<State & Actions>()(
 
       // Block-at-available-room: a slice can grow only into the unallocated
       // space. Lowering one frees room; raising past the room is impossible,
-      // which nudges the user to lower another slice first.
+      // which nudges the user to lower another slice first. Percent is kept at
+      // full precision (no rounding) so amounts can land exactly.
       setPercent: (id, percent) =>
         set((s) => {
           const others = s.partitions
             .filter((p) => p.id !== id)
             .reduce((t, p) => t + p.percent, 0);
           const max = 100 - others;
-          const next = clamp(Math.round(percent), 0, max);
+          const v = Number.isFinite(percent) ? percent : 0;
+          const next = clamp(v, 0, max);
           return {
             partitions: s.partitions.map((p) =>
               p.id === id ? { ...p, percent: next } : p,
+            ),
+          };
+        }),
+
+      // Set a bucket by its currency figure: back-derive the percent so e.g.
+      // "₦50,000" lands exactly, whatever the total. Clamped to available room.
+      setPartitionAmount: (id, value) =>
+        set((s) => {
+          if (!(s.amount > 0)) return s; // can't derive a percent from nothing
+          const others = s.partitions
+            .filter((p) => p.id !== id)
+            .reduce((t, p) => t + p.percent, 0);
+          const max = 100 - others;
+          const v = Number.isFinite(value) ? Math.max(0, value) : 0;
+          const pct = clamp((v / s.amount) * 100, 0, max);
+          return {
+            partitions: s.partitions.map((p) =>
+              p.id === id ? { ...p, percent: pct } : p,
             ),
           };
         }),
@@ -248,7 +270,8 @@ export const useBudget = create<State & Actions>()(
           const left = parts[index];
           const right = parts[index + 1];
           const sum = left.percent + right.percent;
-          const newLeft = clamp(Math.round(leftPercent), 0, sum);
+          const v = Number.isFinite(leftPercent) ? leftPercent : 0;
+          const newLeft = clamp(v, 0, sum);
           parts[index] = { ...left, percent: newLeft };
           parts[index + 1] = { ...right, percent: sum - newLeft };
           return { partitions: parts };
@@ -361,5 +384,8 @@ export function selectAllocated(partitions: Partition[]): number {
 }
 
 export function selectUnallocated(partitions: Partition[]): number {
-  return Math.max(0, 100 - selectAllocated(partitions));
+  // Swallow floating-point dust (e.g. 1e-13) so a fully-split bar reads as 0,
+  // while a real remainder of any size is preserved.
+  const u = 100 - selectAllocated(partitions);
+  return u <= 1e-9 ? 0 : u;
 }

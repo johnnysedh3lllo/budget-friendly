@@ -35,8 +35,17 @@ export function formatMoneyCompact(amount: number, code: string): string {
   }
 }
 
-export function formatPercent(percent: number): string {
-  return `${percent}%`;
+/**
+ * Round a percent to a display precision (default 2dp), dropping trailing
+ * zeros — 50 → 50, 29.75 → 29.75, 0.9765625 → 0.98. Percentages are stored at
+ * full precision (so a typed amount stays exact); only the display is rounded.
+ */
+export function roundPercent(percent: number, maxDecimals = 2): number {
+  return Number(percent.toFixed(maxDecimals));
+}
+
+export function formatPercent(percent: number, maxDecimals = 2): string {
+  return `${roundPercent(percent, maxDecimals)}%`;
 }
 
 export function clamp(value: number, min: number, max: number): number {

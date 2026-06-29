@@ -4,7 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { useBudget, selectUnallocated } from "@/lib/store";
 import { partitionColor } from "@/lib/colors";
-import { formatMoney, formatMoneyCompact } from "@/lib/format";
+import {
+  formatMoney,
+  formatMoneyCompact,
+  formatPercent,
+  roundPercent,
+} from "@/lib/format";
 
 export default function Summary({ onPick }: { onPick?: () => void } = {}) {
   const amount = useBudget((s) => s.amount);
@@ -14,7 +19,9 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
   const setSelected = useBudget((s) => s.setSelected);
   const removePartition = useBudget((s) => s.removePartition);
   const unallocated = selectUnallocated(partitions);
-  const allocated = 100 - unallocated;
+  // "Done" when the remainder rounds away at display precision, so the copy
+  // matches what's shown (no "0% left" while a sliver of dust lingers).
+  const done = roundPercent(unallocated) === 0;
 
   const listRef = useRef<HTMLUListElement>(null);
   const [shadow, setShadow] = useState({ top: false, bottom: false });
@@ -46,7 +53,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
     <div className="flex h-full min-h-0 flex-col gap-4 sm:gap-5">
       <div className="flex shrink-0 items-center justify-between gap-2">
         <h2 className="text-lg">Your breakdown</h2>
-        <StatusPill unallocated={unallocated} />
+        <StatusPill unallocated={unallocated} done={done} />
       </div>
 
       <div className="shrink-0">
@@ -87,7 +94,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
                   {p.name || "Untitled"}
                 </span>
                 <span className="num shrink-0 text-sm text-ink-muted">
-                  {p.percent}%
+                  {formatPercent(p.percent)}
                 </span>
                 <span className="num shrink-0 text-right font-semibold text-ink">
                   {formatMoney(amount * (p.percent / 100), currency)}
@@ -114,7 +121,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
                 Unallocated
               </span>
               <span className="num shrink-0 text-sm text-ink-muted">
-                {unallocated}%
+                {formatPercent(unallocated)}
               </span>
               <span className="num shrink-0 text-right font-semibold text-ink-muted">
                 {formatMoney(amount * (unallocated / 100), currency)}
@@ -126,9 +133,9 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
       </div>
 
       <p className="shrink-0 text-xs text-ink-subtle">
-        {allocated === 100
+        {done
           ? "Every part of your money has a job. Nice."
-          : `${unallocated}% (${formatMoneyCompact(
+          : `${formatPercent(unallocated)} (${formatMoneyCompact(
               amount * (unallocated / 100),
               currency,
             )}) is still waiting for a home — drag a slider up or add a bucket.`}
@@ -156,8 +163,13 @@ function TrashIcon() {
   );
 }
 
-function StatusPill({ unallocated }: { unallocated: number }) {
-  const done = unallocated === 0;
+function StatusPill({
+  unallocated,
+  done,
+}: {
+  unallocated: number;
+  done: boolean;
+}) {
   return (
     <span
       className="num rounded-[var(--radius-pill)] px-2.5 py-1 text-xs font-bold"
@@ -168,7 +180,7 @@ function StatusPill({ unallocated }: { unallocated: number }) {
         color: done ? "var(--success)" : "var(--ink-muted)",
       }}
     >
-      {done ? "100% planned" : `${unallocated}% left`}
+      {done ? "100% planned" : `${formatPercent(unallocated)} left`}
     </span>
   );
 }
@@ -201,7 +213,7 @@ function Donut() {
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         role="img"
-        aria-label={`Donut chart, ${100 - unallocated}% allocated`}
+        aria-label={`Donut chart, ${formatPercent(100 - unallocated)} allocated`}
         style={{ transform: "rotate(-90deg)" }}
       >
         {/* Track */}
@@ -237,7 +249,7 @@ function Donut() {
           {formatMoneyCompact(amount, currency)}
         </span>
         <span className="text-xs font-semibold text-ink-subtle">
-          {100 - unallocated}% planned
+          {formatPercent(100 - unallocated)} planned
         </span>
       </div>
     </div>

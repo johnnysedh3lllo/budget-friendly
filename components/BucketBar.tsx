@@ -8,7 +8,7 @@ import {
   parseBucketText,
 } from "@/lib/store";
 import { partitionColor, PALETTE_SIZE } from "@/lib/colors";
-import { formatMoney } from "@/lib/format";
+import { formatPercent, roundPercent, currencyOf } from "@/lib/format";
 
 /** Pick the label ink per palette colour from its OKLCH lightness. */
 function usePaletteInk(): string[] {
@@ -107,7 +107,8 @@ export default function BucketBar() {
   }
   function onHandleKey(e: React.KeyboardEvent, index: number) {
     const p = partitions[index];
-    const step = e.shiftKey ? 5 : 1;
+    // Shift = coarse (5), Alt = fine (0.1), otherwise 1.
+    const step = e.shiftKey ? 5 : e.altKey ? 0.1 : 1;
     let dir = 0;
     if (e.key === "ArrowRight" || e.key === "ArrowUp") dir = 1;
     else if (e.key === "ArrowLeft" || e.key === "ArrowDown") dir = -1;
@@ -139,7 +140,7 @@ export default function BucketBar() {
           How your 100% is split
         </span>
         <span className="num text-sm font-semibold text-ink-muted">
-          {allocated}
+          {roundPercent(allocated)}
           <span className="text-ink-subtle">/100</span>
         </span>
       </div>
@@ -164,7 +165,7 @@ export default function BucketBar() {
             <button
               key={p.id}
               onClick={() => setSelected(p.id)}
-              aria-label={`Edit ${p.name || "bucket"}, ${p.percent}%`}
+              aria-label={`Edit ${p.name || "bucket"}, ${formatPercent(p.percent)}`}
               className="flex h-full min-w-0 items-center overflow-hidden text-left"
               style={{
                 width: `${p.percent}%`,
@@ -185,7 +186,7 @@ export default function BucketBar() {
                   style={{ color: inks[p.colorIndex] }}
                 >
                   {p.percent >= 12 && p.name ? `${p.name} · ` : ""}
-                  {p.percent}%
+                  {formatPercent(p.percent)}
                 </span>
               )}
             </button>
@@ -235,8 +236,8 @@ export default function BucketBar() {
               aria-label={`Resize ${p.name || "bucket"}`}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={p.percent}
-              aria-valuetext={`${p.percent}%`}
+              aria-valuenow={roundPercent(p.percent)}
+              aria-valuetext={formatPercent(p.percent)}
               onPointerDown={(e) => onHandleDown(e, i)}
               onPointerMove={onHandleMove}
               onPointerUp={onHandleUp}
@@ -274,6 +275,7 @@ function BucketForm({
   const recolorPartition = useBudget((s) => s.recolorPartition);
   const removePartition = useBudget((s) => s.removePartition);
   const setPercent = useBudget((s) => s.setPercent);
+  const setPartitionAmount = useBudget((s) => s.setPartitionAmount);
   const addFromText = useBudget((s) => s.addPartitionsFromText);
   const setSelected = useBudget((s) => s.setSelected);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -360,9 +362,12 @@ function BucketForm({
                 className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
               />
             </div>
-            <span className="num shrink-0 text-sm font-semibold text-ink">
-              {formatMoney(sliceAmount, currency)}
-            </span>
+            <BucketAmountField
+              value={sliceAmount}
+              currency={currency}
+              disabled={amount <= 0}
+              onChange={(v) => setPartitionAmount(p.id, v)}
+            />
           </>
         ) : (
           <span className="flex min-h-6 min-w-[9rem] flex-1 items-center text-base text-ink-subtle">
@@ -426,15 +431,10 @@ function BucketForm({
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={p ? p.percent : ""}
+          <PercentField
+            percent={p ? p.percent : null}
             disabled={disabled}
-            onChange={(e) => p && setPercent(p.id, Number(e.target.value))}
-            aria-label="Percent"
-            className="field num w-16 px-2 py-1 text-right text-sm font-semibold text-ink disabled:opacity-50"
+            onChange={(v) => p && setPercent(p.id, v)}
           />
           <span className="num text-sm text-ink-muted">%</span>
           <button
@@ -452,6 +452,98 @@ function BucketForm({
       {isList && note && (
         <p className="text-xs text-ink-subtle">{note}</p>
       )}
+    </div>
+  );
+}
+
+// Editable percent. Shows the value rounded for reading, but while focused it
+// holds a free-text draft so typing "12.345" isn't snapped back mid-keystroke
+// by the rounded display. Commits the raw number on each change.
+function PercentField({
+  percent,
+  disabled,
+  onChange,
+}: {
+  percent: number | null;
+  disabled: boolean;
+  onChange: (v: number) => void;
+}) {
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState("");
+  const rounded = percent == null ? "" : String(roundPercent(percent));
+  const shown = focused ? draft : rounded;
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={shown}
+      disabled={disabled}
+      onFocus={() => {
+        setFocused(true);
+        setDraft(rounded);
+      }}
+      onBlur={() => setFocused(false)}
+      onChange={(e) => {
+        const raw = e.target.value.replace(/[^0-9.]/g, "");
+        setDraft(raw);
+        const v = parseFloat(raw);
+        onChange(Number.isNaN(v) ? 0 : v);
+      }}
+      aria-label="Percent"
+      className="field num w-16 px-2 py-1 text-right text-sm font-semibold text-ink disabled:opacity-50"
+    />
+  );
+}
+
+// Editable currency figure for a bucket — type "50000" and the percent is
+// back-derived so the amount lands exactly. Same focus/draft trick as above so
+// the recomputed value doesn't overwrite what's being typed.
+function BucketAmountField({
+  value,
+  currency,
+  disabled,
+  onChange,
+}: {
+  value: number;
+  currency: string;
+  disabled: boolean;
+  onChange: (v: number) => void;
+}) {
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState("");
+  const decimals = currencyOf(currency).decimals ?? 2;
+  const symbol = currencyOf(currency).symbol;
+  const formatted = value.toLocaleString(undefined, {
+    maximumFractionDigits: decimals,
+  });
+  const shown = focused ? draft : formatted;
+
+  return (
+    <div className="field flex shrink-0 items-center gap-1 px-2 py-1">
+      <span aria-hidden className="num text-sm text-ink-muted">
+        {symbol}
+      </span>
+      <input
+        type="text"
+        inputMode="decimal"
+        value={shown}
+        disabled={disabled}
+        onFocus={() => {
+          setFocused(true);
+          // Seed the draft with the un-grouped number so it's easy to edit.
+          setDraft(value ? String(Number(value.toFixed(decimals))) : "");
+        }}
+        onBlur={() => setFocused(false)}
+        onChange={(e) => {
+          const raw = e.target.value.replace(/[^0-9.]/g, "");
+          setDraft(raw);
+          const v = parseFloat(raw);
+          onChange(Number.isNaN(v) ? 0 : v);
+        }}
+        aria-label="Amount for this bucket"
+        className="num w-28 bg-transparent text-right text-sm font-semibold text-ink outline-none disabled:opacity-50"
+      />
     </div>
   );
 }

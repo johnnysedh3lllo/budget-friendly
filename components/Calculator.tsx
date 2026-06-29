@@ -3,7 +3,7 @@
 import { useState, type CSSProperties } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useBudget, selectUnallocated } from "@/lib/store";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, roundPercent } from "@/lib/format";
 import AmountInput from "./AmountInput";
 import TemplatePicker from "./TemplatePicker";
 import BucketBar from "./BucketBar";
@@ -101,7 +101,7 @@ export default function Calculator() {
         </span>
         <span className="btn btn-primary shrink-0 text-sm">
           Breakdown
-          <span className="num opacity-80">· {allocated}%</span>
+          <span className="num opacity-80">· {roundPercent(allocated)}%</span>
           <ChevronUp />
         </span>
       </button>
