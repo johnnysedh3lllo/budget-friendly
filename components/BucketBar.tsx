@@ -346,29 +346,21 @@ function BucketForm({
             className="min-h-6 min-w-[9rem] flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-subtle"
           />
         ) : p ? (
-          <>
-            <div className="flex min-w-0 flex-1 items-center gap-1">
-              <span
-                aria-hidden
-                className="size-4 shrink-0 rounded-full"
-                style={{ background: partitionColor(p.colorIndex) }}
-              />
-              <input
-                ref={nameRef}
-                value={p.name}
-                onChange={(e) => renamePartition(p.id, e.target.value)}
-                placeholder="Name this bucket"
-                maxLength={28}
-                className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
-              />
-            </div>
-            <BucketAmountField
-              value={sliceAmount}
-              currency={currency}
-              disabled={amount <= 0}
-              onChange={(v) => setPartitionAmount(p.id, v)}
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            <span
+              aria-hidden
+              className="size-4 shrink-0 rounded-full"
+              style={{ background: partitionColor(p.colorIndex) }}
             />
-          </>
+            <input
+              ref={nameRef}
+              value={p.name}
+              onChange={(e) => renamePartition(p.id, e.target.value)}
+              placeholder="Name this bucket"
+              maxLength={28}
+              className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:text-ink-subtle"
+            />
+          </div>
         ) : (
           <span className="flex min-h-6 min-w-[9rem] flex-1 items-center text-base text-ink-subtle">
             Click a block on the bar to edit it — or add a new bucket.
@@ -431,6 +423,12 @@ function BucketForm({
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
+          <BucketAmountField
+            value={sliceAmount}
+            currency={currency}
+            disabled={disabled || amount <= 0}
+            onChange={(v) => p && setPartitionAmount(p.id, v)}
+          />
           <PercentField
             percent={p ? p.percent : null}
             disabled={disabled}
