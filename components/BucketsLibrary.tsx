@@ -111,7 +111,7 @@ export default function BucketsLibrary() {
                     <MiniBucketBar splits={bucket.splits} />
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     <IconButton
                       label={
                         copiedId === bucket.id

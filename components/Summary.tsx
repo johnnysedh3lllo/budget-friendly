@@ -104,7 +104,7 @@ export default function Summary({ onPick }: { onPick?: () => void } = {}) {
                 onClick={() => removeSplit(p.id)}
                 aria-label={`Remove ${p.name || "split"}`}
                 title="Remove split"
-                className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full p-2 text-ink-subtle opacity-60 transition-all hover:bg-[color-mix(in_oklch,var(--danger)_16%,transparent)] hover:text-[var(--danger)] hover:opacity-100 group-hover:opacity-100"
+                className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full p-2 text-ink-subtle opacity-0 transition-all hover:bg-[color-mix(in_oklch,var(--danger)_16%,transparent)] hover:text-[var(--danger)] hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100"
               >
                 <TrashIcon />
               </button>
