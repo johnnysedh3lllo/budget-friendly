@@ -22,6 +22,7 @@ export default function AmountInput() {
   const editAmount = useBudget((s) => s.editAmount);
   const setSourceCurrency = useBudget((s) => s.setSourceCurrency);
   const setViewCurrency = useBudget((s) => s.setViewCurrency);
+  const clearView = useBudget((s) => s.clearView);
   const syncWorking = useBudget((s) => s.syncWorking);
 
   const [focused, setFocused] = useState(false);
@@ -142,6 +143,17 @@ export default function AmountInput() {
           searchable
           options={viewOptions}
         />
+        {viewCurrency && (
+          <button
+            type="button"
+            onClick={clearView}
+            aria-label="Clear conversion and edit the source value"
+            title="Clear conversion"
+            className="field flex shrink-0 cursor-pointer items-center justify-center px-2 py-2 text-ink-muted transition-colors hover:text-ink"
+          >
+            <ClearIcon />
+          </button>
+        )}
       </div>
       <p className="mt-1.5 text-xs text-ink-subtle">
         {viewCurrency && rateText ? (
@@ -190,4 +202,22 @@ function formatRatesDate(iso: string): string {
 /** Exchange rate to a readable string: ≥1 keeps 2dp (1379.10), else 4 sig figs. */
 function formatRate(rate: number): string {
   return rate >= 1 ? rate.toFixed(2) : Number(rate.toPrecision(4)).toString();
+}
+
+function ClearIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
 }

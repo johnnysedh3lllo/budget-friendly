@@ -126,6 +126,7 @@ type Actions = {
   editAmount: (value: number) => void;
   setSourceCurrency: (code: string, amount: number, currency: string) => void;
   setViewCurrency: (code: string, amount: number, currency: string) => void;
+  clearView: () => void;
   syncWorking: (amount: number, currency: string) => void;
   setCurrencyAuto: (code: string) => void;
   addPartition: () => void;
@@ -183,6 +184,14 @@ export const useBudget = create<State & Actions>()(
       // Right select — convert-to currency. Working values computed by the caller.
       setViewCurrency: (code, amount, currency) =>
         set({ viewCurrency: code, amount, currency }),
+
+      // Clear the conversion: working returns to the source, ready to edit.
+      clearView: () =>
+        set((s) => ({
+          viewCurrency: null,
+          amount: s.srcAmount,
+          currency: s.srcCurrency,
+        })),
 
       // Re-derive working values when rates refresh under an active conversion.
       syncWorking: (amount, currency) => set({ amount, currency }),
