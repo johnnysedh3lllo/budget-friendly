@@ -2,19 +2,12 @@
 
 import { useState } from "react";
 import { useBudget } from "@/lib/store";
-import { TEMPLATES } from "@/lib/templates";
 import { partitionColor } from "@/lib/colors";
 import { roundPercent } from "@/lib/format";
-
-type Slice = { name: string; percent: number; colorIndex: number };
-type Item =
-  | { kind: "saved"; id: string; name: string; slices: Slice[] }
-  | { kind: "builtin"; id: string; name: string; tagline: string; slices: Slice[] };
-
-type View = "list" | "grid";
+import type { SavedSplit } from "@/lib/types";
 
 /** Render slices as the multi-bucket paste text: "Savings 30, Rent 10". */
-function slicesToText(slices: { name: string; percent: number }[]): string {
+export function slicesToText(slices: { name: string; percent: number }[]): string {
   return slices
     .map((s) => `${s.name || "Bucket"} ${roundPercent(s.percent)}`)
     .join(", ");
@@ -41,81 +34,42 @@ export function MiniSplitBar({
   );
 }
 
-// The library of starting splits: the user's saved splits first (newest at the
-// top), then the built-in rules. Borderless rows with hover affordances (like
-// the summary list), a list/grid view switch, and an internal scroll so it can
-// hold many entries while filling the space under the split bar.
+// The library of the user's saved splits (newest first). Borderless rows with
+// hover affordances (like the summary list): click a row to load it, with copy
+// and delete actions. A persisted list/grid switch and an internal scroll let
+// it hold many entries while filling the space under the split bar.
 export default function SplitsLibrary() {
   const savedSplits = useBudget((s) => s.savedSplits);
-  const hiddenTemplateIds = useBudget((s) => s.hiddenTemplateIds);
-  const applyTemplate = useBudget((s) => s.applyTemplate);
+  const view = useBudget((s) => s.libraryView);
+  const setView = useBudget((s) => s.setLibraryView);
   const applySavedSplit = useBudget((s) => s.applySavedSplit);
   const deleteSplit = useBudget((s) => s.deleteSplit);
-  const hideTemplate = useBudget((s) => s.hideTemplate);
-  const restoreTemplates = useBudget((s) => s.restoreTemplates);
-  const [view, setView] = useState<View>("list");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const items: Item[] = [
-    ...savedSplits.map(
-      (s): Item => ({ kind: "saved", id: s.id, name: s.name, slices: s.slices }),
-    ),
-    ...TEMPLATES.filter((t) => !hiddenTemplateIds.includes(t.id)).map(
-      (t): Item => ({
-        kind: "builtin",
-        id: t.id,
-        name: t.name,
-        tagline: t.tagline,
-        slices: t.slices.map((sl, i) => ({ ...sl, colorIndex: i % 8 })),
-      }),
-    ),
-  ];
-
-  function onLoad(item: Item) {
-    if (item.kind === "saved") {
-      applySavedSplit({ id: item.id, name: item.name, slices: item.slices });
-    } else {
-      const t = TEMPLATES.find((x) => x.id === item.id);
-      if (t) applyTemplate(t);
-    }
-  }
-
-  function onCopy(item: Item) {
+  function onCopy(split: SavedSplit) {
     navigator.clipboard
-      ?.writeText(slicesToText(item.slices))
+      ?.writeText(slicesToText(split.slices))
       .then(() => {
-        setCopiedId(item.id);
-        setTimeout(() => setCopiedId((c) => (c === item.id ? null : c)), 1200);
+        setCopiedId(split.id);
+        setTimeout(() => setCopiedId((c) => (c === split.id ? null : c)), 1200);
       })
       .catch(() => {});
-  }
-
-  function onRemove(item: Item) {
-    if (item.kind === "saved") deleteSplit(item.id);
-    else hideTemplate(item.id);
   }
 
   return (
     <div className="flex flex-col lg:min-h-0 lg:flex-1">
       <div className="mb-2 flex items-center justify-between gap-2 lg:shrink-0">
-        <h2 className="text-lg">Start from a split</h2>
-        <div className="flex items-center gap-3">
-          {hiddenTemplateIds.length > 0 && (
-            <button
-              onClick={restoreTemplates}
-              className="text-xs font-semibold text-ink-subtle underline-offset-2 hover:text-ink-muted hover:underline"
-            >
-              Restore defaults
-            </button>
-          )}
+        <h2 className="text-lg">Library</h2>
+        {savedSplits.length > 0 && (
           <ViewSwitch view={view} onChange={setView} />
-        </div>
+        )}
       </div>
 
-      {items.length === 0 ? (
+      {savedSplits.length === 0 ? (
         <p className="text-sm text-ink-subtle">
-          No splits here. Build one above and hit{" "}
-          <span className="font-semibold text-ink-muted">Save</span> to reuse it.
+          No saved splits yet. Build a split and hit{" "}
+          <span className="font-semibold text-ink-muted">Save</span> to keep it
+          here — or start from a rule above.
         </p>
       ) : (
         <div className="bf-scroll -mx-1 px-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
@@ -126,60 +80,41 @@ export default function SplitsLibrary() {
                 : "flex flex-col gap-0.5"
             }
           >
-            {items.map((item) => (
-              <li key={`${item.kind}-${item.id}`} className="group">
+            {savedSplits.map((split) => (
+              <li key={split.id} className="group">
                 <div className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2">
                   <button
                     type="button"
-                    onClick={() => onLoad(item)}
-                    aria-label={`Load ${item.name} into the editor`}
+                    onClick={() => applySavedSplit(split)}
+                    aria-label={`Load ${split.name} into the editor`}
                     className="flex min-w-0 flex-1 flex-col gap-1 text-left"
                   >
-                    <span className="flex items-center gap-1.5">
-                      <span className="truncate font-semibold text-ink">
-                        {item.name}
-                      </span>
-                      {item.kind === "saved" && (
-                        <span className="chip shrink-0 text-[10px] uppercase tracking-wide">
-                          Saved
-                        </span>
-                      )}
+                    <span className="truncate font-semibold text-ink">
+                      {split.name}
                     </span>
                     <span className="truncate text-xs text-ink-subtle">
-                      {item.kind === "builtin"
-                        ? item.tagline
-                        : slicesToText(item.slices)}
+                      {slicesToText(split.slices)}
                     </span>
                   </button>
 
                   <div className="hidden w-20 shrink-0 sm:block">
-                    <MiniSplitBar slices={item.slices} />
+                    <MiniSplitBar slices={split.slices} />
                   </div>
 
                   <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
                     <IconButton
-                      label={`Load ${item.name}`}
-                      onClick={() => onLoad(item)}
+                      label={
+                        copiedId === split.id
+                          ? `${split.name} copied`
+                          : `Copy ${split.name} as text`
+                      }
+                      onClick={() => onCopy(split)}
                     >
-                      <EditIcon />
+                      {copiedId === split.id ? <CheckIcon /> : <CopyIcon />}
                     </IconButton>
                     <IconButton
-                      label={
-                        copiedId === item.id
-                          ? `${item.name} copied`
-                          : `Copy ${item.name} as text`
-                      }
-                      onClick={() => onCopy(item)}
-                    >
-                      {copiedId === item.id ? <CheckIcon /> : <CopyIcon />}
-                    </IconButton>
-                    <IconButton
-                      label={
-                        item.kind === "saved"
-                          ? `Delete ${item.name}`
-                          : `Hide ${item.name}`
-                      }
-                      onClick={() => onRemove(item)}
+                      label={`Delete ${split.name}`}
+                      onClick={() => deleteSplit(split.id)}
                       danger
                     >
                       <TrashIcon />
@@ -199,8 +134,8 @@ function ViewSwitch({
   view,
   onChange,
 }: {
-  view: View;
-  onChange: (v: View) => void;
+  view: "list" | "grid";
+  onChange: (v: "list" | "grid") => void;
 }) {
   return (
     <div
@@ -279,15 +214,6 @@ function IconButton({
     >
       {children}
     </button>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-    </svg>
   );
 }
 

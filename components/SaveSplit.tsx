@@ -7,14 +7,19 @@ import { partitionColor } from "@/lib/colors";
 import { formatMoney, roundPercent } from "@/lib/format";
 import { MiniSplitBar } from "./SplitsLibrary";
 
-// Icon-only "save" button beside the split heading: a dot marks unsaved edits,
-// and a green tick flashes after a save. Clicking opens a modal that previews
-// the current breakdown and asks for a name before saving it to the library.
+// Icon-only "save" beside the split heading: a dot marks unsaved edits and a
+// green tick flashes after saving. When a saved split is loaded, Save updates
+// it in place; otherwise it opens a modal to name a new entry. A Revert button
+// appears alongside while there are unsaved edits.
 export default function SaveSplit() {
   const partitions = useBudget((s) => s.partitions);
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
   const saveSplit = useBudget((s) => s.saveSplit);
+  const updateSplit = useBudget((s) => s.updateSplit);
+  const revertSplit = useBudget((s) => s.revertSplit);
+  const activeSplitId = useBudget((s) => s.activeSplitId);
+  const savedSplits = useBudget((s) => s.savedSplits);
   const dirty = useBudget(selectIsDirty);
 
   const [open, setOpen] = useState(false);
@@ -23,28 +28,60 @@ export default function SaveSplit() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const canSave = partitions.length > 0;
+  // The loaded saved split, if it still exists — Save updates it in place.
+  const active = savedSplits.find((s) => s.id === activeSplitId) ?? null;
 
   useEffect(() => {
     if (open) requestAnimationFrame(() => inputRef.current?.focus());
   }, [open]);
+
+  function flashSaved() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1200);
+  }
+
+  function onSaveClick() {
+    if (active) {
+      updateSplit(active.id);
+      flashSaved();
+    } else {
+      setOpen(true);
+    }
+  }
 
   function submit() {
     if (!name.trim()) return;
     saveSplit(name);
     setName("");
     setOpen(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1200);
+    flashSaved();
   }
 
   return (
     <>
+      {dirty && (
+        <button
+          type="button"
+          onClick={revertSplit}
+          aria-label="Revert unsaved changes"
+          title={active ? `Revert to saved "${active.name}"` : "Revert changes"}
+          className="rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <RevertIcon />
+        </button>
+      )}
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={onSaveClick}
         disabled={!canSave}
-        aria-label={dirty ? "Save split — unsaved changes" : "Save split"}
-        title={dirty ? "Save this split — you have unsaved changes" : "Save this split"}
+        aria-label={
+          active ? `Update ${active.name}` : "Save as a new split"
+        }
+        title={
+          active
+            ? `Update "${active.name}"${dirty ? " — unsaved changes" : ""}`
+            : "Save this split to your library"
+        }
         className="relative rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
       >
         {saved ? <CheckIcon /> : <SaveIcon />}
@@ -173,6 +210,15 @@ function CheckIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="m20 6-11 11-5-5" />
+    </svg>
+  );
+}
+
+function RevertIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3 7v6h6" />
+      <path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
     </svg>
   );
 }

@@ -100,10 +100,19 @@ const DEFAULT_PARTITIONS: Partition[] = [
   { id: "seed-savings", name: "Savings", percent: 20, colorIndex: 3 },
 ];
 
+type Slice = { name: string; percent: number; colorIndex: number };
+
+/** Strip a split down to its saveable slices (no ids). */
+function slicesOf(parts: Partition[]): Slice[] {
+  return parts.map((p) => ({
+    name: p.name,
+    percent: p.percent,
+    colorIndex: p.colorIndex,
+  }));
+}
+
 /** A stable signature of a split (ignores ids) — used to detect unsaved edits. */
-function splitSig(
-  slices: { name: string; percent: number; colorIndex: number }[],
-): string {
+function splitSig(slices: Slice[]): string {
   return JSON.stringify(slices.map((s) => [s.name, s.percent, s.colorIndex]));
 }
 
@@ -121,12 +130,14 @@ type State = {
   /** True once the user explicitly picks a currency — stops location auto-detect. */
   currencyPinned: boolean;
   partitions: Partition[];
-  /** Splits the user saved to reuse, newest first; shown above the built-ins. */
+  /** Splits the user saved to reuse, newest first. */
   savedSplits: SavedSplit[];
-  /** Built-in template ids the user dismissed from the library. */
-  hiddenTemplateIds: string[];
-  /** Signature of the split as of the last save/load — drives the dirty dot. */
-  savedBaseline: string;
+  /** The saved split currently loaded, if any — so Save updates it in place. */
+  activeSplitId: string | null;
+  /** The split as of the last save/load — drives the dirty dot and Revert. */
+  savedBaseline: { name: string; percent: number; colorIndex: number }[];
+  /** Persisted library layout preference. */
+  libraryView: "list" | "grid";
   theme: ThemeName;
   hasHydrated: boolean;
   /** Id of the most recently added bucket, so its row can grab focus. */
@@ -154,9 +165,10 @@ type Actions = {
   applyTemplate: (template: Template) => void;
   applySavedSplit: (split: SavedSplit) => void;
   saveSplit: (name: string) => void;
+  updateSplit: (id: string) => void;
   deleteSplit: (id: string) => void;
-  hideTemplate: (id: string) => void;
-  restoreTemplates: () => void;
+  revertSplit: () => void;
+  setLibraryView: (view: "list" | "grid") => void;
   distributeEvenly: () => void;
   fillUnallocated: (id: string) => void;
   reset: () => void;
@@ -179,8 +191,9 @@ export const useBudget = create<State & Actions>()(
       currencyPinned: false,
       partitions: DEFAULT_PARTITIONS,
       savedSplits: [],
-      hiddenTemplateIds: [],
-      savedBaseline: splitSig(DEFAULT_PARTITIONS),
+      activeSplitId: null,
+      savedBaseline: slicesOf(DEFAULT_PARTITIONS),
+      libraryView: "list",
       theme: "brutalist",
       hasHydrated: false,
       lastAddedId: null,
@@ -350,6 +363,8 @@ export const useBudget = create<State & Actions>()(
       clearPartitions: () =>
         set({ partitions: [], lastAddedId: null, selectedId: null }),
 
+      // Load a built-in rule as a starting point — not a saved split, so a
+      // later Save creates a new library entry (activeSplitId cleared).
       applyTemplate: (template) =>
         set(() => {
           const partitions = template.slices.map((slice, i) => ({
@@ -358,10 +373,15 @@ export const useBudget = create<State & Actions>()(
             percent: slice.percent,
             colorIndex: i % 8,
           }));
-          return { partitions, savedBaseline: splitSig(partitions) };
+          return {
+            partitions,
+            savedBaseline: slicesOf(partitions),
+            activeSplitId: null,
+          };
         }),
 
-      // Load a saved split back into the editor, keeping its bucket colours.
+      // Load a saved split back into the editor, keeping its colours, and mark
+      // it active so edits + Save update this entry in place.
       applySavedSplit: (split) =>
         set(() => {
           const partitions = split.slices.map((slice) => ({
@@ -370,42 +390,60 @@ export const useBudget = create<State & Actions>()(
             percent: slice.percent,
             colorIndex: slice.colorIndex,
           }));
-          return { partitions, savedBaseline: splitSig(partitions) };
+          return {
+            partitions,
+            savedBaseline: slicesOf(partitions),
+            activeSplitId: split.id,
+          };
         }),
 
-      // Snapshot the current split into the library (newest first), and mark
-      // the editor clean so the dirty dot clears.
+      // Save the current split as a NEW library entry (newest first) and make
+      // it the active one so further edits update it.
       saveSplit: (name) =>
+        set((s) => {
+          const id = newId();
+          return {
+            savedSplits: [
+              {
+                id,
+                name: name.trim().slice(0, 40) || "My split",
+                slices: slicesOf(s.partitions),
+              },
+              ...s.savedSplits,
+            ],
+            savedBaseline: slicesOf(s.partitions),
+            activeSplitId: id,
+          };
+        }),
+
+      // Overwrite an existing saved split with the current edit (no rename).
+      updateSplit: (id) =>
         set((s) => ({
-          savedSplits: [
-            {
-              id: newId(),
-              name: name.trim().slice(0, 40) || "My split",
-              slices: s.partitions.map((p) => ({
-                name: p.name,
-                percent: p.percent,
-                colorIndex: p.colorIndex,
-              })),
-            },
-            ...s.savedSplits,
-          ],
-          savedBaseline: splitSig(s.partitions),
+          savedSplits: s.savedSplits.map((x) =>
+            x.id === id ? { ...x, slices: slicesOf(s.partitions) } : x,
+          ),
+          savedBaseline: slicesOf(s.partitions),
+          activeSplitId: id,
         })),
 
       deleteSplit: (id) =>
         set((s) => ({
           savedSplits: s.savedSplits.filter((x) => x.id !== id),
+          activeSplitId: s.activeSplitId === id ? null : s.activeSplitId,
         })),
 
-      // Dismiss a built-in rule from the library (restorable).
-      hideTemplate: (id) =>
+      // Discard unsaved edits — restore the split to its last saved/loaded state.
+      revertSplit: () =>
         set((s) => ({
-          hiddenTemplateIds: s.hiddenTemplateIds.includes(id)
-            ? s.hiddenTemplateIds
-            : [...s.hiddenTemplateIds, id],
+          partitions: s.savedBaseline.map((slice) => ({
+            id: newId(),
+            name: slice.name,
+            percent: slice.percent,
+            colorIndex: slice.colorIndex,
+          })),
         })),
 
-      restoreTemplates: () => set({ hiddenTemplateIds: [] }),
+      setLibraryView: (view) => set({ libraryView: view }),
 
       distributeEvenly: () =>
         set((s) => {
@@ -442,7 +480,8 @@ export const useBudget = create<State & Actions>()(
           viewCurrency: null,
           currency: s.srcCurrency,
           partitions: DEFAULT_PARTITIONS,
-          savedBaseline: splitSig(DEFAULT_PARTITIONS),
+          savedBaseline: slicesOf(DEFAULT_PARTITIONS),
+          activeSplitId: null,
         })),
 
       setTheme: (theme) => {
@@ -485,8 +524,9 @@ export const useBudget = create<State & Actions>()(
         currencyPinned: s.currencyPinned,
         partitions: s.partitions,
         savedSplits: s.savedSplits,
-        hiddenTemplateIds: s.hiddenTemplateIds,
+        activeSplitId: s.activeSplitId,
         savedBaseline: s.savedBaseline,
+        libraryView: s.libraryView,
         theme: s.theme,
       }),
       onRehydrateStorage: () => (state) => {
@@ -510,9 +550,9 @@ export function selectAllocated(partitions: Partition[]): number {
 /** True when the current split differs from the last saved/loaded one. */
 export function selectIsDirty(s: {
   partitions: Partition[];
-  savedBaseline: string;
+  savedBaseline: Slice[];
 }): boolean {
-  return splitSig(s.partitions) !== s.savedBaseline;
+  return splitSig(slicesOf(s.partitions)) !== splitSig(s.savedBaseline);
 }
 
 export function selectUnallocated(partitions: Partition[]): number {

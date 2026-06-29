@@ -7,6 +7,7 @@ import { formatMoney, roundPercent } from "@/lib/format";
 import AmountInput from "./AmountInput";
 import BucketBar from "./BucketBar";
 import SplitsLibrary from "./SplitsLibrary";
+import StartFromRule from "./StartFromRule";
 import Summary from "./Summary";
 
 export default function Calculator() {
@@ -40,7 +41,13 @@ export default function Calculator() {
           <div className="flex flex-col gap-3 lg:shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg">Where your money goes</h2>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <StartFromRule />
+                <span
+                  aria-hidden
+                  className="h-5 w-px"
+                  style={{ background: "var(--border)" }}
+                />
                 <button
                   onClick={clearPartitions}
                   disabled={partitions.length === 0}
