@@ -15,7 +15,7 @@ export default function Calculator() {
   const amount = useBudget((s) => s.amount);
   const currency = useBudget((s) => s.currency);
   const splits = useBudget((s) => s.splits);
-  const distributeEvenly = useBudget((s) => s.distributeEvenly);
+  const newBucket = useBudget((s) => s.newBucket);
   const clearSplits = useBudget((s) => s.clearSplits);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -41,12 +41,20 @@ export default function Calculator() {
           <div className="flex shrink-0 flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg">Where your money goes</h2>
-              {/* Phones: "Start from rule" full-width on top, Clear + Even split
-                  as equal halves below. The 3-button inline row only fits cleanly
-                  at wider widths (it varies by theme font/border), so it waits for
-                  sm; below that the stacked grid never strands a button. */}
+              {/* Phones: "New" full-width on top (the primary way to start a
+                  bucket from scratch), then "Start from rule" + Clear as equal
+                  halves below. The inline row only fits cleanly at wider widths
+                  (it varies by theme font/border), so it waits for sm; below
+                  that the stacked grid never strands a button. */}
               <div className="grid w-full grid-cols-2 gap-2 sm:ml-auto sm:flex sm:w-auto sm:items-center sm:justify-end">
-                <StartFromRule className="col-span-2 w-full sm:col-auto sm:w-auto" />
+                <button
+                  onClick={newBucket}
+                  className="btn btn-ghost col-span-2 w-full gap-1.5 text-sm sm:col-auto sm:w-auto"
+                >
+                  <PlusIcon />
+                  New
+                </button>
+                <StartFromRule className="w-full sm:w-auto" />
                 <span
                   aria-hidden
                   className="hidden h-5 w-px sm:block"
@@ -58,13 +66,6 @@ export default function Calculator() {
                   className="btn btn-ghost text-sm"
                 >
                   Clear
-                </button>
-                <button
-                  onClick={distributeEvenly}
-                  disabled={splits.length === 0}
-                  className="btn btn-ghost text-sm"
-                >
-                  Even split
                 </button>
               </div>
             </div>
@@ -162,6 +163,24 @@ export default function Calculator() {
         )}
       </AnimatePresence>
     </MotionConfig>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   );
 }
 

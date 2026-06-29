@@ -163,6 +163,7 @@ type Actions = {
   adjustPair: (index: number, leftPercent: number) => void;
   recolorSplit: (id: string, colorIndex: number) => void;
   clearSplits: () => void;
+  newBucket: () => void;
   applyTemplate: (template: Template) => void;
   applySavedBucket: (bucket: SavedBucket) => void;
   saveBucket: (name: string) => void;
@@ -356,6 +357,18 @@ export const useBudget = create<State & Actions>()(
 
       clearSplits: () =>
         set({ splits: [], lastAddedId: null, selectedId: null }),
+
+      // Start a brand-new blank bucket from scratch: empty splits, detached from
+      // any saved bucket (so a later Save creates a new library entry) with the
+      // baseline reset so it doesn't read as "unsaved edits" to a saved bucket.
+      newBucket: () =>
+        set({
+          splits: [],
+          savedBaseline: [],
+          activeBucketId: null,
+          lastAddedId: null,
+          selectedId: null,
+        }),
 
       // Load a built-in rule as a starting point — not a saved bucket, so a
       // later Save creates a new library entry (activeBucketId cleared).
