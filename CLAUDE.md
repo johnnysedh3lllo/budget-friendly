@@ -72,6 +72,8 @@ roadmap note in `PRODUCT.md`.
 
 ## Rules
 
+- When reporting information to me, be extremely concise and sacrifice grammar for the sake of concision.
+
 ### Instructions
 
 - **The user's instructions are not optional.** Do what is asked. If you have a
