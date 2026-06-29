@@ -94,10 +94,10 @@ export default function AmountInput() {
       <label htmlFor="amount" className="mb-2 block text-sm text-ink-muted">
         <span className="font-semibold">Amount to split</span>
       </label>
-      <div className="field flex flex-wrap items-center gap-x-1 gap-y-2 px-3 py-2 xs:flex-nowrap sm:px-4 sm:py-3">
-        {/* Symbol + amount: full first row only on ≤320px so the number never
-            truncates; inline with the selects from 360px up. */}
-        <div className="flex min-w-0 basis-full items-center gap-1 xs:flex-1 xs:basis-auto">
+      <div className="field flex flex-wrap items-center gap-x-1 gap-y-2 px-3 py-2 sm:flex-nowrap sm:px-4 sm:py-3">
+        {/* Symbol + amount: full first row below sm so a long number never gets
+            covered by the selects; inline with the selects from 640px up. */}
+        <div className="flex min-w-0 basis-full items-center gap-1 sm:flex-1 sm:basis-auto">
           <span
             aria-hidden
             className="num text-2xl sm:text-3xl text-ink-muted shrink-0"
@@ -120,8 +120,8 @@ export default function AmountInput() {
             className="num w-full min-w-0 bg-transparent text-2xl sm:text-3xl font-semibold text-ink outline-none placeholder:text-ink-subtle"
           />
         </div>
-        {/* Currency selects: wrap to their own row only on ≤320px, inline from 360px. */}
-        <div className="flex w-full shrink-0 items-center justify-end gap-1 xs:w-auto">
+        {/* Currency selects: their own row below sm, inline from 640px up. */}
+        <div className="flex w-full shrink-0 items-center justify-end gap-1 sm:w-auto">
           {/* Left: the currency the entered value is in (source). */}
           <Select
             value={srcCurrency}
