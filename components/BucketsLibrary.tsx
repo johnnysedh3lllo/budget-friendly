@@ -20,17 +20,17 @@ export function MiniBucketBar({
   splits: { percent: number; colorIndex: number }[];
 }) {
   return (
-    <div
+    <span
       className="flex h-1.5 w-full overflow-hidden"
       style={{ borderRadius: "var(--radius-pill)", background: "var(--surface-2)" }}
     >
       {splits.map((s, i) => (
-        <div
+        <span
           key={i}
           style={{ width: `${s.percent}%`, background: splitColor(s.colorIndex) }}
         />
       ))}
-    </div>
+    </span>
   );
 }
 
@@ -99,17 +99,18 @@ export default function BucketsLibrary() {
                     aria-label={`Load ${bucket.name} into the editor`}
                     className="flex min-w-0 flex-1 flex-col gap-1 text-left"
                   >
-                    <span className="truncate font-semibold text-ink">
-                      {bucket.name}
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="min-w-0 truncate font-semibold text-ink">
+                        {bucket.name}
+                      </span>
+                      <span className="w-16 shrink-0">
+                        <MiniBucketBar splits={bucket.splits} />
+                      </span>
                     </span>
                     <span className="truncate text-xs text-ink-subtle">
                       {splitsToText(bucket.splits)}
                     </span>
                   </button>
-
-                  <div className="hidden w-20 shrink-0 sm:block">
-                    <MiniBucketBar splits={bucket.splits} />
-                  </div>
 
                   <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     <IconButton
