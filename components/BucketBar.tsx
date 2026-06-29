@@ -389,28 +389,39 @@ function SplitForm({
           </span>
         )}
 
-        <button
-          type="button"
-          onClick={() => (isList ? setMode("single") : enterListMode())}
-          aria-pressed={isList}
-          aria-label={
-            isList ? "Back to adding one split" : "Add several splits at once"
-          }
-          title={
-            isList ? "Back to adding one split" : "Add several splits at once"
-          }
-          className="btn btn-ghost shrink-0 !px-2 !py-2"
-          style={
-            isList
-              ? {
-                  background: "var(--surface-2)",
-                  outline: "1px solid var(--border)",
-                }
-              : undefined
-          }
+        {/* Mode switch: single split vs. paste several at once. Both options
+            stay visible (segmented), so the way back is always obvious. */}
+        <div
+          role="group"
+          aria-label="Input mode"
+          className="flex shrink-0 items-center gap-0.5 rounded-[var(--radius-sm)] p-0.5"
+          style={{ background: "var(--surface-2)" }}
         >
-          <MultiAddIcon />
-        </button>
+          <button
+            type="button"
+            onClick={() => setMode("single")}
+            aria-label="Add one split at a time"
+            aria-pressed={!isList}
+            title="Add one split at a time"
+            data-on={!isList}
+            className="rounded-[var(--radius-sm)] p-1 text-ink-subtle transition-colors data-[on=true]:text-ink"
+            style={!isList ? { background: "var(--surface)" } : undefined}
+          >
+            <SingleEntryIcon />
+          </button>
+          <button
+            type="button"
+            onClick={() => enterListMode()}
+            aria-label="Add several splits at once"
+            aria-pressed={isList}
+            title="Add several splits at once"
+            data-on={isList}
+            className="rounded-[var(--radius-sm)] p-1 text-ink-subtle transition-colors data-[on=true]:text-ink"
+            style={isList ? { background: "var(--surface)" } : undefined}
+          >
+            <MultiEntryIcon />
+          </button>
+        </div>
 
         <button
           onClick={isList ? submitList : onAdd}
@@ -570,12 +581,12 @@ function SplitAmountField({
   );
 }
 
-// Rows + a plus — "type several splits at once" (single → multiple input).
-function MultiAddIcon() {
+// One input field — "single" mode in the input-mode switch.
+function SingleEntryIcon() {
   return (
     <svg
-      width="16"
-      height="16"
+      width="15"
+      height="15"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -584,8 +595,28 @@ function MultiAddIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M3 6h13M3 12h13M3 18h7" />
-      <path d="M17 14v6M14 17h6" />
+      <rect x="4" y="9.5" width="16" height="5" rx="1.5" />
+    </svg>
+  );
+}
+
+// Three stacked input fields — "multiple" mode in the input-mode switch.
+function MultiEntryIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="4" y="4" width="16" height="4" rx="1.25" />
+      <rect x="4" y="10" width="16" height="4" rx="1.25" />
+      <rect x="4" y="16" width="16" height="4" rx="1.25" />
     </svg>
   );
 }
