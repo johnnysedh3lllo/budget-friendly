@@ -31,14 +31,14 @@ export default function Calculator() {
       <div className="flex min-h-0 w-full flex-1 flex-col lg:flex-row">
         {/* Editor pane */}
         <section
-          className="bf-reveal bf-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-4 sm:gap-5 sm:px-6 sm:pt-6 lg:flex-[1.4] lg:overflow-hidden lg:pb-6"
+          className="bf-reveal bf-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-4 sm:gap-5 sm:px-6 sm:pt-6 lg:flex-[1.4] lg:pb-6"
           style={{ "--reveal-d": "0.05s" } as CSSProperties}
         >
-          <div className="lg:shrink-0">
+          <div className="shrink-0">
             <AmountInput />
           </div>
 
-          <div className="flex flex-col gap-3 lg:shrink-0">
+          <div className="flex shrink-0 flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg">Where your money goes</h2>
               <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export default function Calculator() {
 
           <SplitsLibrary />
 
-          <div className="flex flex-wrap items-center justify-end gap-2 pt-1 lg:shrink-0">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 pt-1">
             <span className="text-xs text-ink-subtle">
               Saved on this device — no account, no tracking.
             </span>

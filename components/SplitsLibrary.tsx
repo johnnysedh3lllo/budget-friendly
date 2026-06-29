@@ -57,15 +57,15 @@ export default function SplitsLibrary() {
   }
 
   return (
-    <div className="flex flex-col lg:min-h-0 lg:flex-1">
-      <div className="mb-2 flex items-center justify-between gap-2 lg:shrink-0">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
         <h2 className="text-lg">Library</h2>
         {savedSplits.length > 0 && (
           <ViewSwitch view={view} onChange={setView} />
         )}
       </div>
 
-      <div className="surface bf-scroll min-h-[7rem] overflow-y-auto p-1.5 lg:min-h-0 lg:flex-1">
+      <div className="surface bf-scroll min-h-[7rem] flex-1 overflow-y-auto p-1.5">
         {savedSplits.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 py-8 text-center">
             <BookmarkIcon />
