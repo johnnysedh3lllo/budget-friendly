@@ -167,6 +167,7 @@ type Actions = {
   applySavedBucket: (bucket: SavedBucket) => void;
   saveBucket: (name: string) => void;
   updateBucket: (id: string) => void;
+  renameBucket: (id: string, name: string) => void;
   deleteBucket: (id: string) => void;
   revertBucket: () => void;
   setLibraryView: (view: "list" | "grid") => void;
@@ -410,6 +411,18 @@ export const useBudget = create<State & Actions>()(
           savedBaseline: splitsOf(s.splits),
           activeBucketId: id,
         })),
+
+      // Rename a saved bucket in place (ignores empty names).
+      renameBucket: (id, name) =>
+        set((s) => {
+          const trimmed = name.trim().slice(0, 40);
+          if (!trimmed) return s;
+          return {
+            savedBuckets: s.savedBuckets.map((x) =>
+              x.id === id ? { ...x, name: trimmed } : x,
+            ),
+          };
+        }),
 
       deleteBucket: (id) =>
         set((s) => ({

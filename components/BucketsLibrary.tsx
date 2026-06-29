@@ -44,8 +44,20 @@ export default function BucketsLibrary() {
   const setView = useBudget((s) => s.setLibraryView);
   const applySavedBucket = useBudget((s) => s.applySavedBucket);
   const deleteBucket = useBudget((s) => s.deleteBucket);
+  const renameBucket = useBudget((s) => s.renameBucket);
   const activeBucketId = useBudget((s) => s.activeBucketId);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+
+  function startRename(bucket: SavedBucket) {
+    setEditingId(bucket.id);
+    setDraft(bucket.name);
+  }
+  function commitRename() {
+    if (editingId) renameBucket(editingId, draft);
+    setEditingId(null);
+  }
 
   function onCopy(bucket: SavedBucket) {
     navigator.clipboard
@@ -95,18 +107,52 @@ export default function BucketsLibrary() {
               <li key={bucket.id} className="group">
                 <div
                   data-active={bucket.id === activeBucketId}
-                  className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2 data-[active=true]:bg-surface-2 data-[active=true]:ring-1 data-[active=true]:ring-inset data-[active=true]:ring-[var(--primary)]"
+                  className="relative flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-2 transition-colors group-hover:bg-surface-2 data-[active=true]:bg-surface-2 data-[active=true]:ring-1 data-[active=true]:ring-inset data-[active=true]:ring-[var(--primary)]"
                 >
-                  <button
-                    type="button"
-                    onClick={() => applySavedBucket(bucket)}
-                    aria-label={`Load ${bucket.name} into the editor`}
-                    className="flex min-w-0 flex-1 flex-col gap-1 text-left"
-                  >
+                  {/* Full-row load target behind the content; hidden while
+                      renaming so a click doesn't load mid-edit. */}
+                  {editingId !== bucket.id && (
+                    <button
+                      type="button"
+                      onClick={() => applySavedBucket(bucket)}
+                      aria-label={`Load ${bucket.name} into the editor`}
+                      className="absolute inset-0 rounded-[var(--radius-md)]"
+                    />
+                  )}
+
+                  <div className="pointer-events-none relative z-10 flex min-w-0 flex-1 flex-col gap-1">
                     <span className="flex min-w-0 items-center gap-2">
-                      <span className="min-w-0 truncate font-semibold text-ink">
-                        {bucket.name}
-                      </span>
+                      {editingId === bucket.id ? (
+                        <input
+                          autoFocus
+                          value={draft}
+                          maxLength={40}
+                          onChange={(e) => setDraft(e.target.value)}
+                          onFocus={(e) => e.target.select()}
+                          onBlur={commitRename}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              commitRename();
+                            } else if (e.key === "Escape") {
+                              e.preventDefault();
+                              setEditingId(null);
+                            }
+                          }}
+                          aria-label={`Rename ${bucket.name}`}
+                          style={{ fontSize: "inherit" }}
+                          className="pointer-events-auto min-w-0 flex-1 rounded-[var(--radius-sm)] bg-surface px-1.5 py-0.5 font-semibold text-ink outline-none ring-1 ring-[var(--ring)]"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => startRename(bucket)}
+                          title="Click to rename"
+                          className="pointer-events-auto min-w-0 cursor-text truncate text-left font-semibold text-ink underline-offset-2 hover:underline"
+                        >
+                          {bucket.name}
+                        </button>
+                      )}
                       <span className="w-16 shrink-0">
                         <MiniBucketBar splits={bucket.splits} />
                       </span>
@@ -114,9 +160,9 @@ export default function BucketsLibrary() {
                     <span className="truncate text-xs text-ink-subtle">
                       {splitsToText(bucket.splits)}
                     </span>
-                  </button>
+                  </div>
 
-                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                  <div className="relative z-10 flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     <IconButton
                       label={
                         copiedId === bucket.id
