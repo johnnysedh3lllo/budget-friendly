@@ -389,39 +389,27 @@ function SplitForm({
           </span>
         )}
 
-        {/* Mode switch: single split vs. paste several at once. Both options
-            stay visible (segmented), so the way back is always obvious. */}
-        <div
-          role="group"
-          aria-label="Input mode"
-          className="flex shrink-0 items-center gap-0.5 rounded-[var(--radius-sm)] p-0.5"
-          style={{ background: "var(--surface-2)" }}
+        {/* Input-mode toggle: the icon shows the CURRENT mode (one field vs.
+            stacked fields); clicking flips between single and multi entry, and
+            the icon swaps to reflect the mode you're now in. */}
+        <button
+          type="button"
+          onClick={() => (isList ? setMode("single") : enterListMode())}
+          aria-pressed={isList}
+          aria-label={
+            isList
+              ? "Multiple-input mode — switch to one at a time"
+              : "Single-input mode — switch to several at once"
+          }
+          title={
+            isList
+              ? "Adding several at once — click for one at a time"
+              : "Adding one at a time — click for several at once"
+          }
+          className="btn btn-ghost shrink-0 !px-2 !py-2"
         >
-          <button
-            type="button"
-            onClick={() => setMode("single")}
-            aria-label="Add one split at a time"
-            aria-pressed={!isList}
-            title="Add one split at a time"
-            data-on={!isList}
-            className="rounded-[var(--radius-sm)] p-1 text-ink-subtle transition-colors data-[on=true]:text-ink"
-            style={!isList ? { background: "var(--surface)" } : undefined}
-          >
-            <SingleEntryIcon />
-          </button>
-          <button
-            type="button"
-            onClick={() => enterListMode()}
-            aria-label="Add several splits at once"
-            aria-pressed={isList}
-            title="Add several splits at once"
-            data-on={isList}
-            className="rounded-[var(--radius-sm)] p-1 text-ink-subtle transition-colors data-[on=true]:text-ink"
-            style={isList ? { background: "var(--surface)" } : undefined}
-          >
-            <MultiEntryIcon />
-          </button>
-        </div>
+          {isList ? <MultiEntryIcon /> : <SingleEntryIcon />}
+        </button>
 
         <button
           onClick={isList ? submitList : onAdd}
