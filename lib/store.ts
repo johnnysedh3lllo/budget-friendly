@@ -101,8 +101,16 @@ const DEFAULT_PARTITIONS: Partition[] = [
 ];
 
 type State = {
+  /** Working value + currency the rest of the app reads. With no conversion
+   *  active these equal the source; with one active they are the converted view. */
   amount: number;
   currency: string;
+  /** The entered value and the currency it's in (left select) — the anchor the
+   *  view conversion is always computed from, so it stays put while you compare. */
+  srcAmount: number;
+  srcCurrency: string;
+  /** Convert-to currency (right select); null = view the source as-is. */
+  viewCurrency: string | null;
   /** True once the user explicitly picks a currency — stops location auto-detect. */
   currencyPinned: boolean;
   partitions: Partition[];
@@ -115,8 +123,10 @@ type State = {
 };
 
 type Actions = {
-  setAmount: (amount: number) => void;
-  setCurrency: (code: string) => void;
+  editAmount: (value: number) => void;
+  setSourceCurrency: (code: string, amount: number, currency: string) => void;
+  setViewCurrency: (code: string, amount: number, currency: string) => void;
+  syncWorking: (amount: number, currency: string) => void;
   setCurrencyAuto: (code: string) => void;
   addPartition: () => void;
   addPartitionsFromText: (text: string) => void;
@@ -144,6 +154,9 @@ export const useBudget = create<State & Actions>()(
     (set, get) => ({
       amount: 3200,
       currency: "USD",
+      srcAmount: 3200,
+      srcCurrency: "USD",
+      viewCurrency: null,
       currencyPinned: false,
       partitions: DEFAULT_PARTITIONS,
       theme: "brutalist",
@@ -151,13 +164,33 @@ export const useBudget = create<State & Actions>()(
       lastAddedId: null,
       selectedId: null,
 
-      setAmount: (amount) =>
-        set({ amount: Number.isFinite(amount) ? Math.max(0, amount) : 0 }),
+      // Typing a value re-anchors the budget: it becomes the new source, in the
+      // currency currently on screen, and any active conversion is cleared.
+      editAmount: (value) =>
+        set((s) => {
+          const v = Number.isFinite(value) ? Math.max(0, value) : 0;
+          // Working currency stays = s.currency; with view cleared the source
+          // currency becomes that too.
+          return { srcAmount: v, srcCurrency: s.currency, viewCurrency: null, amount: v };
+        }),
 
-      // User picks a currency → pin it so auto-detect won't override later.
-      setCurrency: (currency) => set({ currency, currencyPinned: true }),
-      // Location-detected currency → set without pinning.
-      setCurrencyAuto: (currency) => set({ currency }),
+      // Left select — the currency the entered value is in. The caller has the
+      // live rates, so it computes the resulting working amount/currency and
+      // passes them in; picking a source currency pins against auto-detect.
+      setSourceCurrency: (code, amount, currency) =>
+        set({ srcCurrency: code, currencyPinned: true, amount, currency }),
+
+      // Right select — convert-to currency. Working values computed by the caller.
+      setViewCurrency: (code, amount, currency) =>
+        set({ viewCurrency: code, amount, currency }),
+
+      // Re-derive working values when rates refresh under an active conversion.
+      syncWorking: (amount, currency) => set({ amount, currency }),
+
+      // Location-detected currency → set the source (and the working currency
+      // when nothing is being converted) without pinning.
+      setCurrencyAuto: (code) =>
+        set((s) => ({ srcCurrency: code, currency: s.viewCurrency ?? code })),
 
       addPartition: () =>
         set((s) => {
@@ -325,7 +358,14 @@ export const useBudget = create<State & Actions>()(
           };
         }),
 
-      reset: () => set({ amount: 3200, partitions: DEFAULT_PARTITIONS }),
+      reset: () =>
+        set((s) => ({
+          amount: 3200,
+          srcAmount: 3200,
+          viewCurrency: null,
+          currency: s.srcCurrency,
+          partitions: DEFAULT_PARTITIONS,
+        })),
 
       setTheme: (theme) => {
         applyThemeToDom(theme);
@@ -361,6 +401,9 @@ export const useBudget = create<State & Actions>()(
       partialize: (s) => ({
         amount: s.amount,
         currency: s.currency,
+        srcAmount: s.srcAmount,
+        srcCurrency: s.srcCurrency,
+        viewCurrency: s.viewCurrency,
         currencyPinned: s.currencyPinned,
         partitions: s.partitions,
         theme: s.theme,
