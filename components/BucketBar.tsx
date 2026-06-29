@@ -518,7 +518,7 @@ function BucketAmountField({
   const shown = focused ? draft : formatted;
 
   return (
-    <div className="field flex shrink-0 items-center gap-1 px-2 py-1">
+    <div className="field flex w-full min-w-0 max-w-[9rem] items-center gap-1 px-2 py-1">
       <span aria-hidden className="num text-sm text-ink-muted">
         {symbol}
       </span>
@@ -540,7 +540,7 @@ function BucketAmountField({
           onChange(Number.isNaN(v) ? 0 : v);
         }}
         aria-label="Amount for this bucket"
-        className="num w-28 bg-transparent text-right text-sm font-semibold text-ink outline-none disabled:opacity-50"
+        className="num w-full min-w-0 bg-transparent text-right text-sm font-semibold text-ink outline-none disabled:opacity-50"
       />
     </div>
   );
