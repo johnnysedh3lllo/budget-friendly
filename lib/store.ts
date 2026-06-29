@@ -435,12 +435,14 @@ export const useBudget = create<State & Actions>()(
       // Discard unsaved edits — restore the split to its last saved/loaded state.
       revertSplit: () =>
         set((s) => ({
-          partitions: s.savedBaseline.map((slice) => ({
-            id: newId(),
-            name: slice.name,
-            percent: slice.percent,
-            colorIndex: slice.colorIndex,
-          })),
+          partitions: (Array.isArray(s.savedBaseline) ? s.savedBaseline : []).map(
+            (slice) => ({
+              id: newId(),
+              name: slice.name,
+              percent: slice.percent,
+              colorIndex: slice.colorIndex,
+            }),
+          ),
         })),
 
       setLibraryView: (view) => set({ libraryView: view }),
@@ -514,7 +516,22 @@ export const useBudget = create<State & Actions>()(
     }),
     {
       name: "bf-store",
-      version: 1,
+      version: 2,
+      // v1 stored savedBaseline as a signature string; v2 stores slices. Coerce
+      // any legacy value back into an array so the dirty/revert logic is safe.
+      migrate: (persisted) => {
+        const p = persisted as Record<string, unknown> | undefined;
+        if (p && !Array.isArray(p.savedBaseline)) {
+          p.savedBaseline = Array.isArray(p.partitions)
+            ? (p.partitions as Partition[]).map((x) => ({
+                name: x.name,
+                percent: x.percent,
+                colorIndex: x.colorIndex,
+              }))
+            : [];
+        }
+        return p as unknown as State & Actions;
+      },
       partialize: (s) => ({
         amount: s.amount,
         currency: s.currency,
@@ -552,7 +569,8 @@ export function selectIsDirty(s: {
   partitions: Partition[];
   savedBaseline: Slice[];
 }): boolean {
-  return splitSig(slicesOf(s.partitions)) !== splitSig(s.savedBaseline);
+  const base = Array.isArray(s.savedBaseline) ? s.savedBaseline : [];
+  return splitSig(slicesOf(s.partitions)) !== splitSig(base);
 }
 
 export function selectUnallocated(partitions: Partition[]): number {
