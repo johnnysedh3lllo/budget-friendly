@@ -11,26 +11,27 @@ People who manage their own money and have found fixed budgeting rules (50/30/20
 financially curious but not necessarily financial experts. Their context is a
 quiet moment of planning — deciding how a paycheck, a windfall, or a monthly
 income should be split — usually on a phone or laptop, not under time pressure.
-The job to be done: *"Take whatever money I'm putting in and split it across the
-buckets that matter to me, in whatever proportions fit my life, and show me the
+The job to be done: *"Take whatever money I'm putting in and divide it across the
+splits that matter to me, in whatever proportions fit my life, and show me the
 real amounts."*
 
 ## Product Purpose
 
 Budget Friendly is a flexible percentage budget calculator. Instead of forcing a
 named rule, the user starts with 100% and carves it into any number of named
-partitions (down to 1% each). Whatever is left over lives in an explicit
-**Unallocated** bucket. Enter an amount and every partition shows its real
+splits (down to 1% each). Whatever is left over lives in an explicit
+**Unallocated** split. Enter an amount and every split shows its real
 currency figure plus the running total. The existing budgeting rules become
-*starting templates*, not constraints.
+*starting templates*, not constraints. A whole set of splits is a "bucket" the
+user can save and reuse.
 
-Success looks like: a first-time user reaches a personally meaningful split in
+Success looks like: a first-time user reaches a personally meaningful bucket in
 under a minute, trusts the math, and comes back because adjusting it feels good
 rather than like a chore.
 
 Long-term vision (NOT in the MVP, recorded for direction): connect a bank,
 auto-route incoming money to accounts behind each label, sub-labels within
-labels, lockable buckets, and an embeddable view inside existing banking apps.
+labels, lockable splits, and an embeddable view inside existing banking apps.
 The MVP is built so this can grow without re-platforming.
 
 ## Brand Personality
@@ -69,7 +70,7 @@ celebrates a balanced budget with restraint.
 
 - Target **WCAG 2.2 AA**. Body text ≥ 4.5:1, large/UI text ≥ 3:1, verified per
   theme (each theme's palette is contrast-checked, not just the default).
-- Every partition is identifiable without relying on color alone (name + amount
+- Every split is identifiable without relying on color alone (name + amount
   + position, not just its color swatch) — works for color-blind users.
 - All controls keyboard-operable with visible focus rings; sliders are real
   range inputs with ARIA value text announcing percent and amount.

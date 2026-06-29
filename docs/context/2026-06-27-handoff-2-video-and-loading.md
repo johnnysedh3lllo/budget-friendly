@@ -102,8 +102,8 @@ The arc geometry helper is already in `LoadingScreen.tsx` (same as the video):
 - 10 themes, captured at **deviceScaleFactor 3** (4320×2430) for crispness (user
   said quality felt dropped), **full viewport to the footer**, **Next dev "N" badge
   removed** (`document.querySelectorAll('nextjs-portal').forEach(e=>e.remove())`).
-- Rich split so the app isn't sparse: Rent 28, Food 15, Transport 10, Savings 18,
-  Fun 12, Health 9, Misc 8 — NGN 8,500 (7 buckets).
+- Rich bucket so the app isn't sparse: Rent 28, Food 15, Transport 10, Savings 18,
+  Fun 12, Health 9, Misc 8 — NGN 8,500 (7 splits).
 - Capture used `puppeteer-core` (installed ad hoc, **removed after each run**),
   Chrome at `C:/Program Files/Google/Chrome/Application/chrome.exe`, headless, set
   `localStorage` `bf-store` + `bf-theme`, cycled themes via the theme menu, hid the

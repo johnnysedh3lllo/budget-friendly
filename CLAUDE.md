@@ -7,9 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 **Budget Friendly** — a flexible percentage budget calculator. The user starts at
-100% and carves it into any number of named "buckets" (partitions, down to 1%
-each); leftover lives in an explicit **Unallocated** bucket. Enter an amount and
-every bucket shows its real currency figure. The classic rules (50/30/20, etc.)
+100% and carves it into any number of named "splits" (down to 1% each); leftover
+lives in an explicit **Unallocated** split. The whole set of splits is a
+"bucket", which can be saved and reused. Enter an amount and every split shows
+its real currency figure. The classic rules (50/30/20, etc.)
 are *starting templates*, not constraints.
 
 Strategy lives in `PRODUCT.md`; the visual system lives in `DESIGN.md`. Read both
@@ -38,9 +39,10 @@ bank connection, server-held financial tokens) can be added in-place — see the
 roadmap note in `PRODUCT.md`.
 
 - **State** — one Zustand store, `lib/store.ts`, with `persist` (key `bf-store`).
-  Holds `amount`, `currency`, `partitions`, and `theme`. The allocation rule lives
-  here: `setPercent` clamps a slice to `100 − (sum of other slices)`, i.e. a slice
-  can only grow into unallocated room ("block at available room"). `selectAllocated`
+  Holds `amount`, `currency`, `splits`, saved `buckets`, and `theme`. The
+  allocation rule lives here: `setPercent` clamps a split to `100 − (sum of other
+  splits)`, i.e. a split can only grow into unallocated room ("block at available
+  room"). `selectAllocated`
   / `selectUnallocated` are derived selectors. `hasHydrated` gates the UI to avoid
   SSR/localStorage hydration mismatch.
 
@@ -58,14 +60,14 @@ roadmap note in `PRODUCT.md`.
   - Fonts are loaded once via `next/font` in `layout.tsx` and selected per theme
     through `--font-display` / `--font-body` / `--font-numeric`.
 
-- **Partition colors** map by index to the active theme's `--p1…--p8` palette via
-  `partitionColor()` in `lib/colors.ts`. Partitions are always identified by name +
+- **Split colors** map by index to the active theme's `--p1…--p8` palette via
+  `splitColor()` in `lib/colors.ts`. Splits are always identified by name +
   amount + position, never color alone (color-blind safety).
 
 - **Components** (`components/`, all client) compose under `Calculator.tsx`:
-  `AmountInput`, `TemplatePicker`, `AllocationBar` (animated stacked 100% bar),
-  `PartitionRow` (slider + name + color picker + amount), `Summary` (SVG donut +
-  list), `ThemeSwitcher`. `app/page.tsx` is the server shell (header + hero).
+  `AmountInput`, `BucketBar` (the stacked 100% split bar + `SplitForm` editor),
+  `BucketsLibrary` (saved buckets) with `SaveBucket`, `StartFromRule`, `Summary`
+  (SVG donut + list), `ThemeSwitcher`. `app/page.tsx` is the server shell.
 
 - **Motion** uses the `motion` package (`motion/react`). All motion has a
   `prefers-reduced-motion` fallback (see the media query in `globals.css`).

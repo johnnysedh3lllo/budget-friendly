@@ -16,8 +16,8 @@ All tokens are CSS custom properties. Colors are authored in **OKLCH**.
 `--ink` / `--ink-muted` / `--ink-subtle` text ramp · `--primary` /
 `--primary-ink` primary action · `--accent` secondary highlight ·
 `--border` · `--ring` focus · `--success` / `--danger` semantic ·
-`--p1…--p8` the partition palette (8 distinguishable hues per theme) ·
-`--p-unalloc` the neutral Unallocated bucket.
+`--p1…--p8` the split palette (8 distinguishable hues per theme) ·
+`--p-unalloc` the neutral Unallocated split.
 
 ### Type roles
 `--font-display` (headings), `--font-body` (UI + prose), `--font-numeric`
@@ -34,7 +34,7 @@ dragging). Plus `--display-tracking` and `--display-weight`.
 
 | Theme | Mood (scene) | Color strategy | Type | Shape / depth | Motion |
 |---|---|---|---|---|---|
-| **candy** (default) | Arcade prize counter — gummy brights, glossy confidence | Committed: vivid grape primary, full-bright partition palette, faint grape-tinted canvas | Fredoka (rounded display) + Nunito body | Heavy radius (22px), soft diffuse shadows | Bouncy, slight overshoot |
+| **candy** (default) | Arcade prize counter — gummy brights, glossy confidence | Committed: vivid grape primary, full-bright split palette, faint grape-tinted canvas | Fredoka (rounded display) + Nunito body | Heavy radius (22px), soft diffuse shadows | Bouncy, slight overshoot |
 | **pastel** | Early light through linen — soft, unhurried, a deep breath | Restrained: muted low-chroma palette, airy whitespace, cool off-white | Fraunces (soft serif) + Nunito — serif/sans contrast | Gentle radius (18px), very soft shadow | Slow, calm, no overshoot |
 | **geometric** | Risograph poster wall — flat ink blocks, hard edges | Full palette: saturated primary triad on pure white, true-black ink | Space Grotesk display + Geist body | Near-square (4px), hard offset solid shadows, 2px borders | Snappy, mechanical |
 | **fintech** | Private-banking night desk — quiet trust, one confident blue | Restrained: cobalt primary (brand seed, hue ~248), subtle depth | Geist throughout | Medium radius (12px), subtle soft shadow | Smooth, restrained |
@@ -42,7 +42,7 @@ dragging). Plus `--display-tracking` and `--display-weight`.
 ## Contrast & accessibility
 
 Each theme's `--ink`/`--ink-muted` is checked against its own `--surface`
-(body ≥ 4.5:1, large/UI ≥ 3:1) — not just the default. Partitions are always
+(body ≥ 4.5:1, large/UI ≥ 3:1) — not just the default. Splits are always
 identified by **name + amount + position**, never color alone. Focus rings use
 `--ring`. All motion has a `prefers-reduced-motion` fallback (crossfade /
 instant). See [[product]] PRODUCT.md for the strategic principles these serve.
