@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useBudget } from "@/lib/store";
 import { splitColor } from "@/lib/colors";
 import { roundPercent } from "@/lib/format";
@@ -48,16 +48,33 @@ export default function BucketsLibrary() {
   const activeBucketId = useBudget((s) => s.activeBucketId);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
+  const editRef = useRef<HTMLSpanElement>(null);
+  const seedRef = useRef("");
 
   function startRename(bucket: SavedBucket) {
+    seedRef.current = bucket.name;
     setEditingId(bucket.id);
-    setDraft(bucket.name);
   }
   function commitRename() {
-    if (editingId) renameBucket(editingId, draft);
+    if (!editingId) return;
+    renameBucket(editingId, editRef.current?.textContent ?? "");
     setEditingId(null);
   }
+
+  // On entering edit: seed the text, focus, and drop the caret at the end.
+  useEffect(() => {
+    if (!editingId) return;
+    const el = editRef.current;
+    if (!el) return;
+    el.textContent = seedRef.current;
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }, [editingId]);
 
   function onCopy(bucket: SavedBucket) {
     navigator.clipboard
@@ -123,12 +140,13 @@ export default function BucketsLibrary() {
                   <div className="pointer-events-none relative z-10 flex min-w-0 flex-1 flex-col gap-1">
                     <span className="flex min-w-0 items-center gap-2">
                       {editingId === bucket.id ? (
-                        <input
-                          autoFocus
-                          value={draft}
-                          maxLength={40}
-                          onChange={(e) => setDraft(e.target.value)}
-                          onFocus={(e) => e.target.select()}
+                        <span
+                          ref={editRef}
+                          contentEditable
+                          suppressContentEditableWarning
+                          role="textbox"
+                          aria-label={`Rename ${bucket.name}`}
+                          spellCheck={false}
                           onBlur={commitRename}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -139,9 +157,7 @@ export default function BucketsLibrary() {
                               setEditingId(null);
                             }
                           }}
-                          aria-label={`Rename ${bucket.name}`}
-                          style={{ fontSize: "inherit" }}
-                          className="pointer-events-auto min-w-0 flex-1 rounded-[var(--radius-sm)] bg-surface px-1.5 py-0.5 font-semibold text-ink outline-none ring-1 ring-[var(--ring)]"
+                          className="pointer-events-auto whitespace-pre font-semibold text-ink outline-none"
                         />
                       ) : (
                         <button
