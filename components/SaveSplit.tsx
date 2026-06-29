@@ -59,17 +59,6 @@ export default function SaveSplit() {
 
   return (
     <>
-      {dirty && (
-        <button
-          type="button"
-          onClick={revertSplit}
-          aria-label="Revert unsaved changes"
-          title={active ? `Revert to saved "${active.name}"` : "Revert changes"}
-          className="rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
-        >
-          <RevertIcon />
-        </button>
-      )}
       <button
         type="button"
         onClick={onSaveClick}
@@ -93,6 +82,17 @@ export default function SaveSplit() {
           />
         )}
       </button>
+      {dirty && (
+        <button
+          type="button"
+          onClick={revertSplit}
+          aria-label="Revert unsaved changes"
+          title={active ? `Revert to saved "${active.name}"` : "Revert changes"}
+          className="rounded-[var(--radius-sm)] p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <RevertIcon />
+        </button>
+      )}
 
       <AnimatePresence>
         {open && (
@@ -217,8 +217,8 @@ function CheckIcon() {
 function RevertIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M3 7v6h6" />
-      <path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 8a9 9 0 1 0 2.6-3.4L3 8" />
     </svg>
   );
 }
