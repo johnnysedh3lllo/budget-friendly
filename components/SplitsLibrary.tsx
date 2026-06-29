@@ -65,14 +65,24 @@ export default function SplitsLibrary() {
         )}
       </div>
 
-      {savedSplits.length === 0 ? (
-        <p className="text-sm text-ink-subtle">
-          No saved splits yet. Build a split and hit{" "}
-          <span className="font-semibold text-ink-muted">Save</span> to keep it
-          here — or start from a rule above.
-        </p>
-      ) : (
-        <div className="bf-scroll -mx-1 px-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+      <div className="surface bf-scroll min-h-[7rem] overflow-y-auto p-1.5 lg:min-h-0 lg:flex-1">
+        {savedSplits.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-4 py-8 text-center">
+            <BookmarkIcon />
+            <p className="text-sm font-semibold text-ink-muted">
+              No saved splits yet
+            </p>
+            <p className="max-w-[22rem] text-xs text-ink-subtle">
+              Build a split, then hit{" "}
+              <span className="font-semibold text-ink-muted">Save</span> to keep
+              it here — or{" "}
+              <span className="font-semibold text-ink-muted">
+                Start from rule
+              </span>{" "}
+              above.
+            </p>
+          </div>
+        ) : (
           <ul
             className={
               view === "grid"
@@ -124,8 +134,8 @@ export default function SplitsLibrary() {
               </li>
             ))}
           </ul>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -239,6 +249,14 @@ function TrashIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6" />
       <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+function BookmarkIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="text-ink-subtle">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z" />
     </svg>
   );
 }
